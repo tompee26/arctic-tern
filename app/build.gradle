@@ -1,7 +1,10 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.diffplug.spotless'
 }
+
+apply from: "$project.rootDir/spotless.gradle"
 
 android {
     compileSdk versions.compileSdk
@@ -30,6 +33,13 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
+
+task installGitHooks(type: Copy) {
+    from new File(rootProject.rootDir, "scripts/hooks/pre-commit")
+    into { new File(rootProject.rootDir, '.git/hooks') }
+    fileMode 0775
+}
+tasks.getByPath(':app:preBuild').dependsOn installGitHooks
 
 dependencies {
     implementation deps.kotlin.stdlib

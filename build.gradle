@@ -13,20 +13,22 @@ buildscript {
                     "core"     : '1.7.0',
                     "appcompat": '1.4.0',
             ],
+            "spotless"  : "6.1.0"
     ]
 
     ext.deps = [
-            "androidPlugin": "com.android.tools.build:gradle:${versions.agp}",
-            "kotlin"       : [
+            "androidPlugin" : "com.android.tools.build:gradle:${versions.agp}",
+            "kotlin"        : [
                     'plugin'    : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
                     'stdlib'    : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
                     'reflect'   : "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}",
                     'coroutines': "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
             ],
-            "androidx"     : [
+            "androidx"      : [
                     "core"     : "androidx.core:core-ktx:${versions.androidx.core}",
                     "appcompat": "androidx.appcompat:appcompat:${versions.androidx.appcompat}",
             ],
+            "spotlessPlugin": "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}"
     ]
 
     repositories {
@@ -36,6 +38,7 @@ buildscript {
     dependencies {
         classpath deps.androidPlugin
         classpath deps.kotlin.plugin
+        classpath deps.spotlessPlugin
     }
 }
 
