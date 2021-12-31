@@ -11,7 +11,7 @@ buildscript {
 
             "androidx"  : [
                     "core"     : '1.7.0',
-                    "appcompat": '1.4.0',
+                    "appcompat": '1.4.0'
             ],
             "spotless"  : "6.1.0",
             "ksp"       : "1.6.10-1.0.2"
@@ -27,7 +27,7 @@ buildscript {
             ],
             "androidx"      : [
                     "core"     : "androidx.core:core-ktx:${versions.androidx.core}",
-                    "appcompat": "androidx.appcompat:appcompat:${versions.androidx.appcompat}",
+                    "appcompat": "androidx.appcompat:appcompat:${versions.androidx.appcompat}"
             ],
             "spotlessPlugin": "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}",
             "ksp"           : [
