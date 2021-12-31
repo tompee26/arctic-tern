@@ -1,15 +1,41 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    ext.versions = [
+            "compileSdk": 31,
+            "minSdk"    : 26,
+            "targetSdk" : 31,
+
+            "agp"       : '7.0.4',
+            "kotlin"    : '1.6.10',
+            "coroutines": '1.6.0',
+
+            "androidx"  : [
+                    "core"     : '1.7.0',
+                    "appcompat": '1.4.0',
+            ],
+    ]
+
+    ext.deps = [
+            "androidPlugin": "com.android.tools.build:gradle:${versions.agp}",
+            "kotlin"       : [
+                    'plugin'    : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
+                    'stdlib'    : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+                    'reflect'   : "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}",
+                    'coroutines': "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
+            ],
+            "androidx"     : [
+                    "core"     : "androidx.core:core-ktx:${versions.androidx.core}",
+                    "appcompat": "androidx.appcompat:appcompat:${versions.androidx.appcompat}",
+            ],
+    ]
+
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.4"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath deps.androidPlugin
+        classpath deps.kotlin.plugin
     }
 }
 
