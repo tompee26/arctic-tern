@@ -13,7 +13,8 @@ buildscript {
                     "core"     : '1.7.0',
                     "appcompat": '1.4.0',
             ],
-            "spotless"  : "6.1.0"
+            "spotless"  : "6.1.0",
+            "ksp"       : "1.6.10-1.0.2"
     ]
 
     ext.deps = [
@@ -28,7 +29,11 @@ buildscript {
                     "core"     : "androidx.core:core-ktx:${versions.androidx.core}",
                     "appcompat": "androidx.appcompat:appcompat:${versions.androidx.appcompat}",
             ],
-            "spotlessPlugin": "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}"
+            "spotlessPlugin": "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotless}",
+            "ksp"           : [
+                    "plugin": "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${versions.ksp}",
+                    "api"   : "com.google.devtools.ksp:symbol-processing-api:${versions.ksp}"
+            ]
     ]
 
     repositories {
@@ -39,6 +44,7 @@ buildscript {
         classpath deps.androidPlugin
         classpath deps.kotlin.plugin
         classpath deps.spotlessPlugin
+        classpath deps.ksp.plugin
     }
 }
 

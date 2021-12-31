@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'kotlin-android'
     id 'com.diffplug.spotless'
     id 'com.google.devtools.ksp'
@@ -11,13 +11,13 @@ android {
     compileSdk versions.compileSdk
 
     defaultConfig {
-        applicationId "com.tompee.arctictern"
         minSdk versions.minSdk
         targetSdk versions.targetSdk
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -35,20 +35,9 @@ android {
     }
 }
 
-task installGitHooks(type: Copy) {
-    from new File(rootProject.rootDir, "scripts/hooks/pre-commit")
-    into { new File(rootProject.rootDir, '.git/hooks') }
-    fileMode 0775
-}
-tasks.getByPath(':app:preBuild').dependsOn installGitHooks
-
 dependencies {
     implementation project(path: ':nest')
-    ksp project(path: ':compiler')
-
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.coroutines
-
-    implementation deps.androidx.core
-    implementation deps.androidx.appcompat
+    implementation deps.ksp.api
 }
