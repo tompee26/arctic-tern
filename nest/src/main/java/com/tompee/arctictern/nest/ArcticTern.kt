@@ -6,7 +6,4 @@ package com.tompee.arctictern.nest
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ArcticTern {
-
-
-}
+annotation class ArcticTern
