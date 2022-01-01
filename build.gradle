@@ -18,6 +18,10 @@ buildscript {
             "autoservice": [
                     "artifact": "1.0",
                     "ksp"     : "1.0.0"
+            ],
+            "kotlinpoet" : [
+                    "core": "1.10.2",
+                    "jvm" : "0.4.0"
             ]
     ]
 
@@ -42,6 +46,12 @@ buildscript {
             "autoservice"   : [
                     "artifact": "com.google.auto.service:auto-service-annotations:${versions.autoservice.artifact}",
                     "ksp"     : "dev.zacsweers.autoservice:auto-service-ksp:${versions.autoservice.ksp}"
+            ],
+            "kotlinpoet"    : [
+                    "core"       : "com.squareup:kotlinpoet:${versions.kotlinpoet.core}",
+                    "metadata"   : "com.squareup:kotlinpoet-metadata:${versions.kotlinpoet.core}",
+                    "ksp"        : "com.squareup:kotlinpoet-ksp:${versions.kotlinpoet.core}",
+                    "metadatajvm": "org.jetbrains.kotlinx:kotlinx-metadata-jvm:${versions.kotlinpoet.jvm}"
             ]
     ]
 

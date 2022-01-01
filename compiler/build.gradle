@@ -14,8 +14,15 @@ dependencies {
     implementation project(path: ':nest')
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.coroutines
+
     implementation deps.ksp.artifact
     implementation deps.ksp.api
+
     implementation deps.autoservice.artifact
     ksp deps.autoservice.ksp
+
+    implementation deps.kotlinpoet.core
+    implementation deps.kotlinpoet.metadata
+    implementation deps.kotlinpoet.ksp
+    implementation deps.kotlinpoet.metadatajvm
 }
