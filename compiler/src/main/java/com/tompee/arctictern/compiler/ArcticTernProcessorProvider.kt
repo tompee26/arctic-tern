@@ -11,9 +11,9 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
-import com.tompee.arctictern.nest.ArcticTern
+import com.tompee.arctictern.nest.ArcticTernApp
 
 @AutoService(SymbolProcessorProvider::class)
 class ArcticTernProcessorProvider : SymbolProcessorProvider {
@@ -29,17 +29,29 @@ private class ArcticTernProcessor(environment: SymbolProcessorEnvironment) : Sym
     private val logger: KSPLogger = environment.logger
     private val options: Map<String, String> = environment.options
 
-    @OptIn(KotlinPoetKspPreview::class)
-    override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver
-            .getSymbolsWithAnnotation(ArcticTern::class.qualifiedName.orEmpty())
-            .filterIsInstance<KSClassDeclaration>()
+    private val filesToWrite = mutableSetOf<FileSpec>()
 
-        FileSpec.builder("com.tompee.arctictern", "Preference")
-            .addType(TypeSpec.classBuilder("Hello").build())
+    override fun process(resolver: Resolver): List<KSAnnotated> {
+        val appSymbol = resolver
+            .getSymbolsWithAnnotation(ArcticTernApp::class.qualifiedName.orEmpty())
+            .filterIsInstance<KSClassDeclaration>()
+            .first()
+
+        filesToWrite += FileSpec.builder("com.tompee.arctictern", "Preference")
+            .addType(
+                TypeSpec.classBuilder("Hello")
+                    .addOriginatingKSFile(appSymbol.containingFile!!)
+                    .build()
+            )
             .build()
-            .writeTo(codeGenerator, false)
 
         return emptyList()
+    }
+
+    override fun finish() {
+        super.finish()
+        filesToWrite.forEach {
+            it.writeTo(codeGenerator, false)
+        }
     }
 }
