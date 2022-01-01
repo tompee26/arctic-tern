@@ -2,7 +2,6 @@ package com.tompee.arctictern.compiler
 
 import com.google.auto.service.AutoService
 import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -11,7 +10,6 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.tompee.arctictern.nest.ArcticTern
-import java.io.OutputStream
 
 @AutoService(SymbolProcessorProvider::class)
 class ArcticTernProcessorProvider : SymbolProcessorProvider {
@@ -32,12 +30,6 @@ private class ArcticTernProcessor(environment: SymbolProcessorEnvironment) : Sym
             .getSymbolsWithAnnotation(ArcticTern::class.qualifiedName.orEmpty())
             .filterIsInstance<KSClassDeclaration>()
 
-        val file: OutputStream = codeGenerator.createNewFile(
-            dependencies = Dependencies(false),
-            packageName = "com.tompee",
-            fileName = "GeneratedFunctions"
-        )
-        file.close()
-        throw IllegalStateException()
+        return emptyList()
     }
 }

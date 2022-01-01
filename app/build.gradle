@@ -44,7 +44,7 @@ tasks.getByPath(':app:preBuild').dependsOn installGitHooks
 
 dependencies {
     implementation project(path: ':nest')
-    ksp project(path: ':compiler', configuration: 'default')
+    ksp project(path: ':compiler')
 
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.coroutines
