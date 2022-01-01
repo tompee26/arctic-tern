@@ -49,16 +49,16 @@ android {
     }
 }
 
-val copyTask = task("installGitHooks", Copy::class) {
+val copyTaskProvider = tasks.register<Copy>("installGitHooks") {
     from("../scripts/hooks/pre-commit")
     into("../.git/hooks")
-    fileMode = 775
+    fileMode = Integer.parseInt("0775",8)
 }
 
-tasks.getByPath(":app:preBuild").dependsOn(copyTask)
+tasks.getByPath(":app:preBuild").dependsOn(copyTaskProvider.get())
 
 dependencies {
-    implementation(project(":nest"))
+    compileOnly(project(":nest"))
     ksp(project(":compiler"))
 
     implementation(Libs.Kotlin.stdlib)
