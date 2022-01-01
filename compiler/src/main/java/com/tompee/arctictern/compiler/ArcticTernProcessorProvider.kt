@@ -10,8 +10,6 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.writeTo
 import com.tompee.arctictern.nest.ArcticTernApp
 
@@ -37,13 +35,7 @@ private class ArcticTernProcessor(environment: SymbolProcessorEnvironment) : Sym
             .filterIsInstance<KSClassDeclaration>()
             .first()
 
-        filesToWrite += FileSpec.builder("com.tompee.arctictern", "Preference")
-            .addType(
-                TypeSpec.classBuilder("Hello")
-                    .addOriginatingKSFile(appSymbol.containingFile!!)
-                    .build()
-            )
-            .build()
+        filesToWrite += PreferenceWriter(appSymbol).createFileSpec()
 
         return emptyList()
     }
