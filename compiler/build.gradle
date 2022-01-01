@@ -39,5 +39,8 @@ dependencies {
     implementation project(path: ':nest')
     implementation deps.kotlin.stdlib
     implementation deps.kotlin.coroutines
+    implementation deps.ksp.artifact
     implementation deps.ksp.api
+    implementation deps.autoservice.artifact
+    ksp deps.autoservice.ksp
 }
