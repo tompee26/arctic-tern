@@ -38,5 +38,6 @@ android {
 
 dependencies {
     implementation(Libs.Kotlin.stdlib)
+    api(Libs.Kotlin.coroutines)
     implementation(Libs.AndroidX.core)
 }
