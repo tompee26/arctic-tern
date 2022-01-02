@@ -9,3 +9,4 @@ rootProject.name = "arctic-tern"
 include ':app'
 include ':annotation'
 include ':compiler'
+include ':nest'
