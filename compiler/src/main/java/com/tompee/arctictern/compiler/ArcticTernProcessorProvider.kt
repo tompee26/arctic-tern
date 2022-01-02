@@ -11,6 +11,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
+import com.tompee.arctictern.nest.ArcticTern
 import com.tompee.arctictern.nest.ArcticTernApp
 
 @AutoService(SymbolProcessorProvider::class)
@@ -19,31 +20,43 @@ class ArcticTernProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return ArcticTernProcessor(environment)
     }
-}
 
-private class ArcticTernProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
+    private class ArcticTernProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
-    private val codeGenerator: CodeGenerator = environment.codeGenerator
-    private val logger: KSPLogger = environment.logger
-    private val options: Map<String, String> = environment.options
+        private val codeGenerator: CodeGenerator = environment.codeGenerator
+        private val logger: KSPLogger = environment.logger
+        private val options: Map<String, String> = environment.options
 
-    private val filesToWrite = mutableSetOf<FileSpec>()
+        private val filesToWrite = mutableSetOf<FileSpec>()
 
-    override fun process(resolver: Resolver): List<KSAnnotated> {
-        val appSymbol = resolver
-            .getSymbolsWithAnnotation(ArcticTernApp::class.qualifiedName.orEmpty())
-            .filterIsInstance<KSClassDeclaration>()
-            .first()
+        override fun process(resolver: Resolver): List<KSAnnotated> {
+            try {
+                val appSymbol = resolver
+                    .getSymbolsWithAnnotation(ArcticTernApp::class.qualifiedName.orEmpty())
+                    .filterIsInstance<KSClassDeclaration>()
+                    .firstOrNull()
+                    ?: throw IllegalStateException("${ArcticTernApp::class.simpleName} annotation not found")
 
-        filesToWrite += PreferenceWriter(appSymbol).createFileSpec()
+                filesToWrite += PreferenceWriter(appSymbol).createFileSpec()
 
-        return emptyList()
-    }
+                resolver
+                    .getSymbolsWithAnnotation(ArcticTern::class.qualifiedName.orEmpty())
+                    .filterIsInstance<KSClassDeclaration>()
+                    .forEach { PreferenceImplementationWriter(it) }
+            } catch (e: ProcessingException) {
+                logger.error(e.message.orEmpty(), e.node)
+            } catch (e: Throwable) {
+                logger.error(e.message.orEmpty())
+            }
 
-    override fun finish() {
-        super.finish()
-        filesToWrite.forEach {
-            it.writeTo(codeGenerator, false)
+            return emptyList()
+        }
+
+        override fun finish() {
+            super.finish()
+            filesToWrite.forEach {
+                it.writeTo(codeGenerator, false)
+            }
         }
     }
 }
