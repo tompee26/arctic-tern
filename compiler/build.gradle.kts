@@ -18,7 +18,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation(project(":nest"))
+    implementation(project(":annotation"))
     implementation(Libs.Kotlin.stdlib)
     implementation(Libs.Kotlin.coroutines)
 
