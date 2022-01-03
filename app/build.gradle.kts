@@ -38,21 +38,21 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
-
-    applicationVariants.all {
-        val variantName = name
-        sourceSets {
-            getByName("main") {
-                java.srcDir(File("build/generated/ksp/$variantName/kotlin"))
-            }
-        }
-    }
 }
 
 val copyTaskProvider = tasks.register<Copy>("installGitHooks") {
     from("../scripts/hooks/pre-commit")
     into("../.git/hooks")
-    fileMode = Integer.parseInt("0775",8)
+    fileMode = Integer.parseInt("0775", 8)
+}
+
+kotlin {
+    sourceSets.debug {
+        kotlin.srcDir("build/generated/ksp/debug/kotlin")
+    }
+    sourceSets.release {
+        kotlin.srcDir("build/generated/ksp/release/kotlin")
+    }
 }
 
 tasks.getByPath(":app:preBuild").dependsOn(copyTaskProvider.get())

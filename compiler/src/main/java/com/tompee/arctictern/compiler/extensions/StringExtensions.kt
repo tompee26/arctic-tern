@@ -1,6 +1,6 @@
 package com.tompee.arctictern.compiler.extensions
 
-import java.util.*
+import java.util.Locale
 
 /**
  * Capitalizes the first character of the string
