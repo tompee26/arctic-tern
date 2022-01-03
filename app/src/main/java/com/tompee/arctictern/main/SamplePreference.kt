@@ -10,4 +10,13 @@ internal abstract class SamplePreference {
 
     @ArcticTern.Property("key_boolean")
     open var booleanPreference: Boolean = false
+
+    @ArcticTern.Property
+    open var floatPreference: Float = 0.04f
+
+    @ArcticTern.Property("loooong")
+    open var longPreference: Long = 123L
+
+    @ArcticTern.Property("myString")
+    open var stringPreference: String = "mypreference"
 }

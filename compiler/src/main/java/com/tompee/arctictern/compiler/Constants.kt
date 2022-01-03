@@ -2,15 +2,24 @@ package com.tompee.arctictern.compiler
 
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LONG
+import com.squareup.kotlinpoet.STRING
+import com.tompee.arctictern.compiler.entities.DataType
 import com.tompee.arctictern.compiler.entities.Field
 
-/**
- * Supported native data types
- */
-internal val supportedTypeMap = mapOf(
-    INT to ("getInt" to "putInt"),
-    BOOLEAN to ("getBoolean" to "putBoolean")
+internal val supportedTypes = setOf(
+    DataType(INT, true, "getInt", "putInt"),
+    DataType(INT, false, "getInt", "putInt"),
+    DataType(BOOLEAN, true, "getBoolean", "putBoolean"),
+    DataType(BOOLEAN, false, "getBoolean", "putBoolean"),
+    DataType(FLOAT, true, "getFloat", "putFloat"),
+    DataType(FLOAT, false, "getFloat", "putFloat"),
+    DataType(LONG, true, "getLong", "putLong"),
+    DataType(LONG, false, "getLong", "putLong"),
+    DataType(STRING, true, "getString", "putString"),
+    DataType(STRING, false, "getString", "putString"),
 )
 
 /**

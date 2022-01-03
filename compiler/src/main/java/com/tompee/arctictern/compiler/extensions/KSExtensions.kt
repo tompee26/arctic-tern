@@ -9,3 +9,9 @@ import com.squareup.kotlinpoet.ksp.toClassName
  */
 internal val KSPropertyDeclaration.className: ClassName
     get() = type.resolve().toClassName()
+
+/**
+ * Returns true if type is explicitly marked as nullable
+ */
+internal val KSPropertyDeclaration.isNullable: Boolean
+    get() = type.resolve().isMarkedNullable

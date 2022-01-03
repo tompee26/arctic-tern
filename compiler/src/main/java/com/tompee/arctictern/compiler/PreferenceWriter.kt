@@ -16,8 +16,10 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.className
 import com.tompee.arctictern.compiler.extensions.getKey
-import com.tompee.arctictern.compiler.extensions.preferenceGetter
-import com.tompee.arctictern.compiler.extensions.preferenceSetter
+import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
+import com.tompee.arctictern.compiler.extensions.getPreferenceSetter
+import com.tompee.arctictern.compiler.extensions.isNullable
+import com.tompee.arctictern.compiler.extensions.isSupportedType
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
@@ -45,7 +47,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                 throw ProcessingException("Only var properties are allowed", it)
             if (Modifier.OPEN !in it.modifiers)
                 throw ProcessingException("Properties must be open", it)
-            if (it.className !in supportedTypeMap.keys) {
+            if (!it.className.isSupportedType) {
                 throw ProcessingException("Unsupported type ${it.className.simpleName}", it)
             }
         }
@@ -175,11 +177,14 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                                 defaultValueName
                             )
                             .addStatement(
-                                "%L.%L(%L, %L)",
+                                "%L.%L(%L, %L)%L",
                                 preferenceName,
-                                propertyDeclaration.className.preferenceGetter,
+                                propertyDeclaration.className.getPreferenceGetter(
+                                    propertyDeclaration.isNullable
+                                ),
                                 keyName,
-                                defaultValueName
+                                defaultValueName,
+                                if (!propertyDeclaration.isNullable) "!!" else ""
                             )
                             .build()
                     )
@@ -197,7 +202,9 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                             .addStatement(
                                 "%L.edit().%L(%L, %L).apply()",
                                 preferenceName,
-                                propertyDeclaration.className.preferenceSetter,
+                                propertyDeclaration.className.getPreferenceSetter(
+                                    propertyDeclaration.isNullable
+                                ),
                                 keyName,
                                 valueName
                             )
