@@ -10,6 +10,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -136,8 +137,10 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      */
     private fun buildAllProperties(): List<PropertySpec> {
         return properties.map { (propDeclaration, property) ->
+            val internalPropName = "${propDeclaration.simpleName.asString()}Internal"
             listOf(
-                buildLazyPreferenceProperty(propDeclaration, property)
+                buildLazyPreferenceProperty(internalPropName, propDeclaration, property),
+                buildPropertyOverride(internalPropName, propDeclaration, property)
             )
         }.flatten()
     }
@@ -146,6 +149,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      * Builds the private lazy ArcticTernPreference property
      */
     private fun buildLazyPreferenceProperty(
+        internalPropName: String,
         propertyDeclaration: KSPropertyDeclaration,
         property: ArcticTern.Property
     ): PropertySpec {
@@ -154,7 +158,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         val defaultValueName = "defaultValue"
         val valueName = "value"
         return PropertySpec.builder(
-            "${propertyDeclaration.simpleName.asString()}Internal",
+            internalPropName,
             preferenceField.type.parameterizedBy(propertyDeclaration.className),
             KModifier.PRIVATE
         )
@@ -219,6 +223,37 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                     )
                     .addStatement(")")
                     .endControlFlow()
+                    .build()
+            )
+            .build()
+    }
+
+    /**
+     * Builds the property override
+     */
+    private fun buildPropertyOverride(
+        internalPropName: String,
+        propertyDeclaration: KSPropertyDeclaration,
+        property: ArcticTern.Property
+    ): PropertySpec {
+        return PropertySpec.builder(
+            propertyDeclaration.simpleName.asString(),
+            propertyDeclaration.className,
+            KModifier.OVERRIDE
+        )
+            .mutable(true)
+            .setter(
+                FunSpec.setterBuilder()
+                    .addParameter(
+                        ParameterSpec.builder("value", propertyDeclaration.className)
+                            .build()
+                    )
+                    .addStatement("%L.value = value", internalPropName)
+                    .build()
+            )
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return %L.value", internalPropName)
                     .build()
             )
             .build()
