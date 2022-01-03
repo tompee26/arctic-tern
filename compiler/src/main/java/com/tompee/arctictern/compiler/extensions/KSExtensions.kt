@@ -7,6 +7,5 @@ import com.squareup.kotlinpoet.ksp.toClassName
 /**
  * Converts a property declaration's type into a [Class]
  */
-internal fun KSPropertyDeclaration.className(): ClassName {
-    return type.resolve().toClassName()
-}
+internal val KSPropertyDeclaration.className: ClassName
+    get() = type.resolve().toClassName()

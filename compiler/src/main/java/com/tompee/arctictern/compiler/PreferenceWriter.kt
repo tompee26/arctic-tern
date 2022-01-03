@@ -15,8 +15,9 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.className
-import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
-import com.tompee.arctictern.compiler.extensions.getPreferenceSetter
+import com.tompee.arctictern.compiler.extensions.getKey
+import com.tompee.arctictern.compiler.extensions.preferenceGetter
+import com.tompee.arctictern.compiler.extensions.preferenceSetter
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
@@ -44,8 +45,8 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                 throw ProcessingException("Only var properties are allowed", it)
             if (Modifier.OPEN !in it.modifiers)
                 throw ProcessingException("Properties must be open", it)
-            if (it.className() !in supportedTypeMap.keys) {
-                throw ProcessingException("Unsupported type ${it.className().simpleName}", it)
+            if (it.className !in supportedTypeMap.keys) {
+                throw ProcessingException("Unsupported type ${it.className.simpleName}", it)
             }
         }
         .map { it to it.getAnnotationsByType(ArcticTern.Property::class).first() }
@@ -152,14 +153,14 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         val valueName = "value"
         return PropertySpec.builder(
             "${propertyDeclaration.simpleName.asString()}Internal",
-            preferenceField.type.parameterizedBy(propertyDeclaration.className()),
+            preferenceField.type.parameterizedBy(propertyDeclaration.className),
             KModifier.PRIVATE
         )
             .delegate(
                 CodeBlock.builder()
                     .beginControlFlow("lazy")
                     .addStatement("%L(", preferenceField.type.simpleName)
-                    .addStatement("key = %S,", property.key)
+                    .addStatement("key = %S,", property.getKey(propertyDeclaration))
                     .addStatement(
                         "defaultValue = super.%L,",
                         propertyDeclaration.simpleName.asString()
@@ -176,7 +177,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                             .addStatement(
                                 "%L.%L(%L, %L)",
                                 preferenceName,
-                                propertyDeclaration.className().getPreferenceGetter(),
+                                propertyDeclaration.className.preferenceGetter,
                                 keyName,
                                 defaultValueName
                             )
@@ -196,7 +197,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                             .addStatement(
                                 "%L.edit().%L(%L, %L).apply()",
                                 preferenceName,
-                                propertyDeclaration.className().getPreferenceSetter(),
+                                propertyDeclaration.className.preferenceSetter,
                                 keyName,
                                 valueName
                             )

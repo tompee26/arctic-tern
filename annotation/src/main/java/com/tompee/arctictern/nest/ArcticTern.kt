@@ -17,9 +17,12 @@ annotation class ArcticTern(val preferenceFile: String, val version: Int) {
      * Denotes a var property that can be used to get and set the value
      * Properties must be open for override
      *
-     * @property key the shared preference key
+     * @property key the shared preference key. If not set, will autogenerate using
+     *               the property name prepended with "key", e.g. "key_timestamp".
+     *               Keys are important and must not change once created, otherwise, the pointer
+     *               to the data might get lost.
      */
     @Target(AnnotationTarget.PROPERTY)
     @Retention(AnnotationRetention.SOURCE)
-    annotation class Property(val key: String)
+    annotation class Property(val key: String = "arcticterndefault")
 }
