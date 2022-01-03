@@ -19,4 +19,7 @@ internal abstract class SamplePreference {
 
     @ArcticTern.Property("myString")
     open var stringPreference: String = "mypreference"
+
+    @ArcticTern.Property
+    open var nullableStringPreference: String? = null
 }

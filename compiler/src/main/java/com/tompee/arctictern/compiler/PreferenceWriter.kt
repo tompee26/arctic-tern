@@ -21,6 +21,7 @@ import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
 import com.tompee.arctictern.compiler.extensions.getPreferenceSetter
 import com.tompee.arctictern.compiler.extensions.isNullable
 import com.tompee.arctictern.compiler.extensions.isSupportedType
+import com.tompee.arctictern.compiler.extensions.toNullable
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
@@ -140,7 +141,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
             val internalPropName = "${propDeclaration.simpleName.asString()}Internal"
             listOf(
                 buildLazyPreferenceProperty(internalPropName, propDeclaration, property),
-                buildPropertyOverride(internalPropName, propDeclaration, property)
+                buildPropertyOverride(internalPropName, propDeclaration)
             )
         }.flatten()
     }
@@ -159,7 +160,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         val valueName = "value"
         return PropertySpec.builder(
             internalPropName,
-            preferenceField.type.parameterizedBy(propertyDeclaration.className),
+            preferenceField.type.parameterizedBy(
+                propertyDeclaration.className.toNullable(
+                    propertyDeclaration.isNullable
+                )
+            ),
             KModifier.PRIVATE
         )
             .delegate(
@@ -233,12 +238,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      */
     private fun buildPropertyOverride(
         internalPropName: String,
-        propertyDeclaration: KSPropertyDeclaration,
-        property: ArcticTern.Property
+        propertyDeclaration: KSPropertyDeclaration
     ): PropertySpec {
         return PropertySpec.builder(
             propertyDeclaration.simpleName.asString(),
-            propertyDeclaration.className,
+            propertyDeclaration.className.toNullable(propertyDeclaration.isNullable),
             KModifier.OVERRIDE
         )
             .mutable(true)

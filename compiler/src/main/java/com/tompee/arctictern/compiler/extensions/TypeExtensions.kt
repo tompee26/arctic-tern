@@ -26,3 +26,10 @@ internal fun TypeName.getPreferenceSetter(isNullable: Boolean): String {
  */
 internal val TypeName.isSupportedType: Boolean
     get() = supportedTypes.any { it.name == this }
+
+/**
+ * Converts a property declaration's type into a [Class]
+ */
+internal fun TypeName.toNullable(isMutable: Boolean): TypeName {
+    return if (isMutable) copy(true) else this
+}
