@@ -16,13 +16,13 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.capitalize
-import com.tompee.arctictern.compiler.extensions.className
 import com.tompee.arctictern.compiler.extensions.getKey
-import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
-import com.tompee.arctictern.compiler.extensions.getPreferenceSetter
 import com.tompee.arctictern.compiler.extensions.isNullable
 import com.tompee.arctictern.compiler.extensions.isSupportedType
+import com.tompee.arctictern.compiler.extensions.preferenceGetter
+import com.tompee.arctictern.compiler.extensions.preferenceSetter
 import com.tompee.arctictern.compiler.extensions.toNullable
+import com.tompee.arctictern.compiler.extensions.typeName
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
@@ -50,8 +50,8 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                 throw ProcessingException("Only var properties are allowed", it)
             if (Modifier.OPEN !in it.modifiers)
                 throw ProcessingException("Properties must be open", it)
-            if (!it.className.isSupportedType) {
-                throw ProcessingException("Unsupported type ${it.className.simpleName}", it)
+            if (!it.typeName.isSupportedType) {
+                throw ProcessingException("Unsupported type ${it.typeName}", it)
             }
         }
         .map { it to it.getAnnotationsByType(ArcticTern.Property::class).first() }
@@ -173,7 +173,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         return PropertySpec.builder(
             internalPropName,
             preferenceField.type.parameterizedBy(
-                propertyDeclaration.className.toNullable(
+                propertyDeclaration.typeName.toNullable(
                     propertyDeclaration.isNullable
                 )
             ),
@@ -198,11 +198,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                                 defaultValueName
                             )
                             .addStatement(
-                                "$preferenceName.${
-                                propertyDeclaration.className.getPreferenceGetter(
-                                    propertyDeclaration.isNullable
-                                )
-                                }",
+                                "$preferenceName.${propertyDeclaration.typeName.preferenceGetter}",
                                 keyName,
                                 defaultValueName,
                             )
@@ -220,11 +216,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                                 valueName
                             )
                             .addStatement(
-                                "$preferenceName.edit().${
-                                propertyDeclaration.className.getPreferenceSetter(
-                                    propertyDeclaration.isNullable
-                                )
-                                }.apply()",
+                                "$preferenceName.edit().${propertyDeclaration.typeName.preferenceSetter}.apply()",
                                 keyName,
                                 valueName
                             )
@@ -253,14 +245,14 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
     ): PropertySpec {
         return PropertySpec.builder(
             propertyDeclaration.simpleName.asString(),
-            propertyDeclaration.className.toNullable(propertyDeclaration.isNullable),
+            propertyDeclaration.typeName.toNullable(propertyDeclaration.isNullable),
             KModifier.OVERRIDE
         )
             .mutable(true)
             .setter(
                 FunSpec.setterBuilder()
                     .addParameter(
-                        ParameterSpec.builder("value", propertyDeclaration.className)
+                        ParameterSpec.builder("value", propertyDeclaration.typeName)
                             .build()
                     )
                     .addStatement("%L.value = value", internalPropName)
@@ -284,7 +276,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         return PropertySpec.builder(
             "${propertyDeclaration.simpleName.asString()}Flow",
             flowField.type.parameterizedBy(
-                propertyDeclaration.className.toNullable(
+                propertyDeclaration.typeName.toNullable(
                     propertyDeclaration.isNullable
                 )
             )

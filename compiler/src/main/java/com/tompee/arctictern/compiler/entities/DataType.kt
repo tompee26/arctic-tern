@@ -1,10 +1,9 @@
 package com.tompee.arctictern.compiler.entities
 
-import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.TypeName
 
 internal data class DataType(
-    val name: ClassName,
-    val nullable: Boolean,
+    val name: TypeName,
     val getter: String,
     val setter: String
 )
