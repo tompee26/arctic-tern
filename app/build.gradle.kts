@@ -58,7 +58,8 @@ val copyTaskProvider = tasks.register<Copy>("installGitHooks") {
 tasks.getByPath(":app:preBuild").dependsOn(copyTaskProvider.get())
 
 dependencies {
-    compileOnly(project(":nest"))
+    implementation(project(":nest"))
+    compileOnly(project(":annotation"))
     ksp(project(":compiler"))
 
     implementation(Libs.Kotlin.stdlib)

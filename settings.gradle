@@ -7,5 +7,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "arctic-tern"
 include ':app'
-include ':nest'
+include ':annotation'
 include ':compiler'
+include ':nest'

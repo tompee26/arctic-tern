@@ -14,10 +14,11 @@ java {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions.freeCompilerArgs += "-opt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview"
+    kotlinOptions.freeCompilerArgs += "-opt-in=com.google.devtools.ksp.KspExperimental"
 }
 
 dependencies {
-    implementation(project(":nest"))
+    implementation(project(":annotation"))
     implementation(Libs.Kotlin.stdlib)
     implementation(Libs.Kotlin.coroutines)
 

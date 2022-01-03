@@ -9,6 +9,7 @@ buildscript {
         classpath(Libs.Kotlin.plugin)
         classpath(Libs.spotlessPlugin)
         classpath(Libs.KSP.plugin)
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
     }
 }
 
