@@ -36,7 +36,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      */
     private val className = ClassName(
         classDeclaration.packageName.asString(),
-        "${classDeclaration.simpleName.asString()}Impl"
+        "ArcticTern${classDeclaration.simpleName.asString()}"
     )
 
     /**
