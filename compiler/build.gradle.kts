@@ -3,6 +3,8 @@ plugins {
     id("kotlin")
     id("com.diffplug.spotless")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.dokka") version Versions.dokka
+    id("maven-publish")
 }
 
 apply("../spotless.gradle")
@@ -16,6 +18,23 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     kotlinOptions.freeCompilerArgs += "-opt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview"
     kotlinOptions.freeCompilerArgs += "-opt-in=com.google.devtools.ksp.KspExperimental"
 }
+
+tasks.dokkaJavadoc.configure {
+    dokkaSourceSets {
+        dokkaSourceSets {
+            configureEach {
+                jdkVersion.set(11)
+            }
+        }
+    }
+}
+
+ext {
+    set("PUBLISH_ARTIFACT_ID", "arctic-tern-compiler")
+    set("PUBLISH_DESCRIPTION", "Compiler package for Arctic Tern")
+}
+
+apply("../scripts/publish-module.gradle")
 
 dependencies {
     implementation(project(":annotation"))

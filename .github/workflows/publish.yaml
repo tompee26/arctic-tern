@@ -1,0 +1,29 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          ./gradlew clean build
+
+      - name: Decode Secret Key Ring
+        uses: timheuer/base64-to-file@v1.1
+        with:
+          fileName: 'secretkeyring.gpg'
+          fileDir: '.'
+          encodedString: ${{ secrets.SECRET_RING_KEY }}
+
+      - name: Debug
+        run: ls -al
+
+      - name: Publish
+        run: |
+          ./gradlew publishReleasePublicationToSonatypeRepository

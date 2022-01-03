@@ -7,6 +7,7 @@ object Versions {
     const val agp = "7.0.4"
     const val kotlin = "1.6.10"
     const val coroutines = "1.6.0"
+    const val dokka = "1.6.10"
 
     object AndroidX {
         const val core = "1.7.0"

@@ -2,6 +2,8 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("com.diffplug.spotless")
+    id("org.jetbrains.dokka") version Versions.dokka
+    id("maven-publish")
 }
 
 apply("../spotless.gradle")
@@ -35,6 +37,22 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
+
+tasks.dokkaJavadoc.configure {
+    dokkaSourceSets {
+        configureEach {
+            jdkVersion.set(11)
+            noAndroidSdkLink.set(false)
+        }
+    }
+}
+
+ext {
+    set("PUBLISH_ARTIFACT_ID", "arctic-tern-nest")
+    set("PUBLISH_DESCRIPTION", "Android package for Arctic Tern")
+}
+
+apply("../scripts/publish-module.gradle")
 
 dependencies {
     implementation(Libs.Kotlin.stdlib)
