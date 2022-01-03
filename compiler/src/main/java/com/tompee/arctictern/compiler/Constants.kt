@@ -14,16 +14,16 @@ import com.tompee.arctictern.compiler.entities.Field
  * // TODO: Support collection types and custom types
  */
 internal val supportedTypes = setOf(
-    DataType(INT, true, "getInt", "putInt"),
-    DataType(INT, false, "getInt", "putInt"),
-    DataType(BOOLEAN, true, "getBoolean", "putBoolean"),
-    DataType(BOOLEAN, false, "getBoolean", "putBoolean"),
-    DataType(FLOAT, true, "getFloat", "putFloat"),
-    DataType(FLOAT, false, "getFloat", "putFloat"),
-    DataType(LONG, true, "getLong", "putLong"),
-    DataType(LONG, false, "getLong", "putLong"),
-    DataType(STRING, true, "getString", "putString"),
-    DataType(STRING, false, "getString", "putString"),
+    DataType(INT, true, "getInt(%L, %L)", "putInt(%L, %L)"),
+    DataType(INT, false, "getInt(%L, %L)", "putInt(%L, %L)"),
+    DataType(BOOLEAN, true, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
+    DataType(BOOLEAN, false, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
+    DataType(FLOAT, true, "getFloat(%L, %L)", "putFloat(%L, %L)"),
+    DataType(FLOAT, false, "getFloat(%L, %L)", "putFloat(%L, %L)"),
+    DataType(LONG, true, "getLong(%L, %L)", "putLong(%L, %L)"),
+    DataType(LONG, false, "getLong(%L, %L)", "putLong(%L, %L)"),
+    DataType(STRING, true, "getString(%L, %L)", "putString(%L, %L)"),
+    DataType(STRING, false, "getString(%L, %L).orEmpty()", "putString(%L, %L)"),
 )
 
 /**

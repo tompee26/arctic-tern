@@ -198,14 +198,13 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                                 defaultValueName
                             )
                             .addStatement(
-                                "%L.%L(%L, %L)%L",
-                                preferenceName,
+                                "$preferenceName.${
                                 propertyDeclaration.className.getPreferenceGetter(
                                     propertyDeclaration.isNullable
-                                ),
+                                )
+                                }",
                                 keyName,
                                 defaultValueName,
-                                if (!propertyDeclaration.isNullable) "!!" else ""
                             )
                             .build()
                     )
@@ -221,11 +220,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                                 valueName
                             )
                             .addStatement(
-                                "%L.edit().%L(%L, %L).apply()",
-                                preferenceName,
+                                "$preferenceName.edit().${
                                 propertyDeclaration.className.getPreferenceSetter(
                                     propertyDeclaration.isNullable
-                                ),
+                                )
+                                }.apply()",
                                 keyName,
                                 valueName
                             )
