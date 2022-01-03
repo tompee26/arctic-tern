@@ -9,6 +9,10 @@ import com.squareup.kotlinpoet.STRING
 import com.tompee.arctictern.compiler.entities.DataType
 import com.tompee.arctictern.compiler.entities.Field
 
+/**
+ * Set of supported files
+ * // TODO: Support collection types and custom types
+ */
 internal val supportedTypes = setOf(
     DataType(INT, true, "getInt", "putInt"),
     DataType(INT, false, "getInt", "putInt"),
@@ -44,4 +48,12 @@ internal val sharedPreferencesField = Field(
 internal val preferenceField = Field(
     "arcticTernPreference",
     ClassName("com.tompee.arctictern.nest", "ArcticTernPreference")
+)
+
+/**
+ * Flow field
+ */
+internal val flowField = Field(
+    "flow",
+    ClassName("kotlinx.coroutines.flow", "Flow")
 )
