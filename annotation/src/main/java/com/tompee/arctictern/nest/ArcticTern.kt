@@ -4,19 +4,22 @@ package com.tompee.arctictern.nest
  * A class annotated with this will have a generated functions that can be used to
  * support data persistence powered by Kotlin Flow and SharedPreferences.
  *
- * This can only be used on interfaces.
+ * This can only be used on abstract classes.
  *
- * @property filename the preference filename
+ * @property preferenceFile the preference filename
  * @property version version code
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ArcticTern(val filename: String, val version: Int) {
+annotation class ArcticTern(val preferenceFile: String, val version: Int) {
 
     /**
-     * Denotes a property that will be used to generate setter, getter and observer methods
+     * Denotes a var property that can be used to get and set the value
+     * Properties must be open for override
+     *
+     * @property key the shared preference key
      */
     @Target(AnnotationTarget.PROPERTY)
     @Retention(AnnotationRetention.SOURCE)
-    annotation class Property
+    annotation class Property(val key: String)
 }

@@ -1,188 +1,218 @@
 package com.tompee.arctictern.compiler
 
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.squareup.kotlinpoet.BOOLEAN
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
-import com.squareup.kotlinpoet.UNIT
-import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
-import com.tompee.arctictern.compiler.entities.Field
+import com.squareup.kotlinpoet.ksp.toKModifier
+import com.tompee.arctictern.compiler.extensions.className
+import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
+import com.tompee.arctictern.compiler.extensions.getPreferenceSetter
+import com.tompee.arctictern.nest.ArcticTern
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
 
-    companion object {
+    /**
+     * [ArcticTern] annotation
+     */
+    private val arcticTern = classDeclaration.getAnnotationsByType(ArcticTern::class).first()
 
-        /**
-         * File and class name
-         */
-        private const val filename = "Preference"
+    /**
+     * Class name
+     */
+    private val className = ClassName(
+        classDeclaration.packageName.asString(),
+        "${classDeclaration.simpleName.asString()}Impl"
+    )
 
-        /**
-         * Type parameter name
-         */
-        private val typeName = TypeVariableName("T")
+    /**
+     * Annotated properties
+     */
+    private val properties = classDeclaration.getAllProperties()
+        .filter { it.getAnnotationsByType(ArcticTern.Property::class).any() }
+        .onEach {
+            if (!it.isMutable)
+                throw ProcessingException("Only var properties are allowed", it)
+            if (Modifier.OPEN !in it.modifiers)
+                throw ProcessingException("Properties must be open", it)
+            if (it.className() !in supportedTypeMap.keys) {
+                throw ProcessingException("Unsupported type ${it.className().simpleName}", it)
+            }
+        }
+        .map { it to it.getAnnotationsByType(ArcticTern.Property::class).first() }
+        .toList()
 
-        /**
-         * Key field
-         */
-        private val keyField = Field("key", STRING)
-
-        /**
-         * Default value field
-         */
-        private val defaultValueField = Field("defaultValue", typeName)
-
-        /**
-         * Value provider field
-         */
-        private val valueProviderField = Field(
-            "valueProvider",
-            LambdaTypeName.get(
-                parameters = arrayOf(Constants.sharedPreferencesField.type),
-                returnType = typeName
-            )
-        )
-
-        /**
-         * Value setter field
-         */
-        private val valueSetterField = Field(
-            "valueSetter",
-            LambdaTypeName.get(
-                parameters = arrayOf(Constants.sharedPreferencesField.type, typeName),
-                returnType = UNIT
-            )
-        )
-
-        /**
-         * Value field
-         */
-        private val valueField = Field("value", typeName)
-
-        /**
-         * Is set field
-         */
-        private val isSetField = Field("isSet", BOOLEAN)
-
-        /**
-         * Flow type
-         */
-        private val flowType = ClassName("kotlinx.coroutines.flow", "Flow")
-            .parameterizedBy(typeName)
+    init {
+        // Validate that only interface can be annotated
+        if (Modifier.ABSTRACT !in classDeclaration.modifiers) {
+            throw ProcessingException("Annotated class is not an abstract class", classDeclaration)
+        }
     }
 
-    fun createFileSpec(): FileSpec {
-        return FileSpec.builder(classDeclaration.packageName.asString(), filename)
+    fun createFile(): FileSpec {
+        return FileSpec.builder(className.packageName, className.simpleName)
             .addType(buildClass())
-            .addImport(
-                "kotlinx.coroutines.flow",
-                "callbackFlow",
-                "filter",
-                "onStart",
-                "map",
-                "conflate"
-            )
-            .addImport("kotlinx.coroutines.channels", "awaitClose")
             .build()
     }
 
+    /**
+     * Build the class. The hierarchy will be
+     * Class implements the preference file
+     *   Constructor
+     *   SharedPreference Property
+     *   All properties declared
+     */
     private fun buildClass(): TypeSpec {
-        return TypeSpec.classBuilder(filename)
-            .addModifiers(KModifier.INTERNAL)
-            .addOriginatingKSFile(classDeclaration.containingFile!!)
-            .addTypeVariable(typeName)
+        return TypeSpec.classBuilder(className)
+            .addModifiers(
+                listOfNotNull(classDeclaration.getVisibility().toKModifier())
+            )
+            .superclass(
+                ClassName(
+                    classDeclaration.packageName.asString(),
+                    classDeclaration.simpleName.asString()
+                )
+            )
             .primaryConstructor(buildConstructor())
-            .addProperties(buildPropertyList())
-            .addFunctions(buildFunctionList())
+            .addProperties(buildConstructorProperties())
+            .addProperty(createSharedPreferencesLazyProperty())
+            .addProperties(buildAllProperties())
             .build()
     }
 
+    /**
+     * Builds the constructor. Contains the context as a parameter
+     */
     private fun buildConstructor(): FunSpec {
         return FunSpec.constructorBuilder()
-            .addParameter(keyField.toParameterSpec())
-            .addParameter(defaultValueField.toParameterSpec())
-            .addParameter(valueProviderField.toParameterSpec())
-            .addParameter(valueSetterField.toParameterSpec())
-            .addParameter(Constants.sharedPreferencesField.toParameterSpec())
+            .addParameter(contextField.toParameterSpec())
             .build()
     }
 
-    private fun buildPropertyList(): List<PropertySpec> {
+    /**
+     * Builds the constructor parameters as properties to modify
+     * their visibility
+     */
+    private fun buildConstructorProperties(): List<PropertySpec> {
         return listOf(
-            keyField.toPropertySpec(true),
-            defaultValueField.toPropertySpec(true),
-            valueProviderField.toPropertySpec(true, KModifier.PRIVATE),
-            valueSetterField.toPropertySpec(true, KModifier.PRIVATE),
-            Constants.sharedPreferencesField.toPropertySpec(true, KModifier.PRIVATE),
-            valueField.toPropertySpecBuilder()
-                .getter(
-                    FunSpec.getterBuilder()
-                        .addStatement(
-                            "return %L.invoke(%L)",
-                            valueProviderField.name,
-                            Constants.sharedPreferencesField.name
-                        )
-                        .build()
-                )
-                .build(),
-            isSetField.toPropertySpecBuilder()
-                .getter(
-                    FunSpec.getterBuilder()
-                        .addStatement(
-                            "return %L.contains(%L)",
-                            Constants.sharedPreferencesField.name,
-                            keyField.name
-                        )
-                        .build()
-                )
+            contextField
+                .toPropertySpecBuilder(true, KModifier.PRIVATE)
                 .build()
         )
     }
 
-    private fun buildFunctionList(): List<FunSpec> {
-        return listOf(
-            FunSpec.builder("set")
-                .addParameter("value", typeName)
-                .addStatement(
-                    "%L.invoke(%L, value)",
-                    valueSetterField.name,
-                    Constants.sharedPreferencesField.name
-                )
-                .build(),
-            FunSpec.builder("delete")
-                .addStatement(
-                    "%L.edit().remove(%L).apply()",
-                    Constants.sharedPreferencesField.name,
-                    keyField.name
-                )
-                .build(),
-            FunSpec.builder("observe")
-                .returns(flowType)
-                .addCode(
-                    CodeBlock.builder()
-                        .beginControlFlow("return callbackFlow {")
-                        .beginControlFlow("val listener = SharedPreferences.OnSharedPreferenceChangeListener")
-                        .addStatement("_, key -> trySend(key)")
-                        .endControlFlow()
-                        .addStatement("sharedPreferences.registerOnSharedPreferenceChangeListener(listener)")
-                        .addStatement("awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }")
-                        .endControlFlow()
-                        .addStatement(".filter { it == key || it == null }")
-                        .addStatement(".onStart { emit(\"\") } // Just to trigger the first emission")
-                        .addStatement(".map { value }")
-                        .addStatement(".conflate()")
-                        .build()
-                )
-                .build()
+    /**
+     * Creates the SharedPreferences property as a lazy delegate
+     */
+    private fun createSharedPreferencesLazyProperty(): PropertySpec {
+        return PropertySpec.builder(sharedPreferencesField.name, sharedPreferencesField.type)
+            .delegate(
+                CodeBlock.builder()
+                    .beginControlFlow("lazy")
+                    .addStatement(
+                        "context.getSharedPreferences(%S, Context.MODE_PRIVATE)",
+                        arcticTern.preferenceFile
+                    )
+                    .endControlFlow()
+                    .build()
+            )
+            .build()
+    }
+
+    /**
+     * Properties
+     */
+    private fun buildAllProperties(): List<PropertySpec> {
+        return properties.map { (propDeclaration, property) ->
+            listOf(
+                buildLazyPreferenceProperty(propDeclaration, property)
+            )
+        }.flatten()
+    }
+
+    /**
+     * Builds the private lazy ArcticTernPreference property
+     */
+    private fun buildLazyPreferenceProperty(
+        propertyDeclaration: KSPropertyDeclaration,
+        property: ArcticTern.Property
+    ): PropertySpec {
+        val preferenceName = "preference"
+        val keyName = "key"
+        val defaultValueName = "defaultValue"
+        val valueName = "value"
+        return PropertySpec.builder(
+            "${propertyDeclaration.simpleName.asString()}Internal",
+            preferenceField.type.parameterizedBy(propertyDeclaration.className()),
+            KModifier.PRIVATE
         )
+            .delegate(
+                CodeBlock.builder()
+                    .beginControlFlow("lazy")
+                    .addStatement("%L(", preferenceField.type.simpleName)
+                    .addStatement("key = %S,", property.key)
+                    .addStatement(
+                        "defaultValue = super.%L,",
+                        propertyDeclaration.simpleName.asString()
+                    )
+                    .beginControlFlow("valueProvider = ")
+                    .add(
+                        CodeBlock.builder()
+                            .addStatement(
+                                "%L, %L, %L ->",
+                                preferenceName,
+                                keyName,
+                                defaultValueName
+                            )
+                            .addStatement(
+                                "%L.%L(%L, %L)",
+                                preferenceName,
+                                propertyDeclaration.className().getPreferenceGetter(),
+                                keyName,
+                                defaultValueName
+                            )
+                            .build()
+                    )
+                    .endControlFlow()
+                    .addStatement(",")
+                    .beginControlFlow("valueSetter = ")
+                    .add(
+                        CodeBlock.Builder()
+                            .addStatement(
+                                "%L, %L, %L ->",
+                                preferenceName,
+                                keyName,
+                                valueName
+                            )
+                            .addStatement(
+                                "%L.edit().%L(%L, %L).apply()",
+                                preferenceName,
+                                propertyDeclaration.className().getPreferenceSetter(),
+                                keyName,
+                                valueName
+                            )
+                            .build()
+                    )
+                    .endControlFlow()
+                    .addStatement(",")
+                    .addStatement(
+                        "%L = %L",
+                        sharedPreferencesField.name,
+                        sharedPreferencesField.name
+                    )
+                    .addStatement(")")
+                    .endControlFlow()
+                    .build()
+            )
+            .build()
     }
 }

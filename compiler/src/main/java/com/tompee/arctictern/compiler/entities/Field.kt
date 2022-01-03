@@ -1,11 +1,11 @@
 package com.tompee.arctictern.compiler.entities
 
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
 
-internal class Field(val name: String, val type: TypeName) {
+internal class Field(val name: String, val type: ClassName) {
 
     fun toParameterSpec(vararg modifiers: KModifier = emptyArray()): ParameterSpec {
         return toParameterSpecBuilder(*modifiers).build()

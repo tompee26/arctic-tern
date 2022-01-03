@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.onStart
 class ArcticTernPreference<T>(
     val key: String,
     val defaultValue: T,
-    private val valueProvider: (SharedPreferences) -> T,
-    private val valueSetter: (SharedPreferences, T) -> Unit,
+    private val valueProvider: (SharedPreferences, String, T) -> T,
+    private val valueSetter: (SharedPreferences, String, T) -> Unit,
     private val sharedPreferences: SharedPreferences
 ) {
 
@@ -35,8 +35,8 @@ class ArcticTernPreference<T>(
      * Updates/Returns the current value
      */
     var value: T
-        get() = valueProvider.invoke(sharedPreferences)
-        set(value) = valueSetter.invoke(sharedPreferences, value)
+        get() = valueProvider.invoke(sharedPreferences, key, defaultValue)
+        set(value) = valueSetter.invoke(sharedPreferences, key, value)
 
     /**
      * Returns true if this preference has a current value set

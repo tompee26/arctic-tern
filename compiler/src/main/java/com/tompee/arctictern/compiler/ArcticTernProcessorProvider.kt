@@ -37,12 +37,12 @@ class ArcticTernProcessorProvider : SymbolProcessorProvider {
                     .firstOrNull()
                     ?: throw IllegalStateException("${ArcticTernApp::class.simpleName} annotation not found")
 
-                filesToWrite += PreferenceWriter(appSymbol).createFileSpec()
-
-                resolver
-                    .getSymbolsWithAnnotation(ArcticTern::class.qualifiedName.orEmpty())
-                    .filterIsInstance<KSClassDeclaration>()
-                    .forEach { PreferenceImplementationWriter(it) }
+                filesToWrite.addAll(
+                    resolver
+                        .getSymbolsWithAnnotation(ArcticTern::class.qualifiedName.orEmpty())
+                        .filterIsInstance<KSClassDeclaration>()
+                        .map { PreferenceWriter(it).createFile() }
+                )
             } catch (e: ProcessingException) {
                 logger.error(e.message.orEmpty(), e.node)
             } catch (e: Throwable) {
