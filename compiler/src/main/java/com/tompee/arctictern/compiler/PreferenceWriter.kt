@@ -15,6 +15,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
+import com.tompee.arctictern.compiler.extensions.capitalize
 import com.tompee.arctictern.compiler.extensions.className
 import com.tompee.arctictern.compiler.extensions.getKey
 import com.tompee.arctictern.compiler.extensions.getPreferenceGetter
@@ -75,40 +76,32 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      *   Constructor
      *   SharedPreference Property
      *   All properties declared
+     *   Optional delete functions
      */
     private fun buildClass(): TypeSpec {
         return TypeSpec.classBuilder(className)
-            .addModifiers(
-                listOfNotNull(classDeclaration.getVisibility().toKModifier())
-            )
+            .addModifiers(listOfNotNull(classDeclaration.getVisibility().toKModifier()))
             .superclass(
                 ClassName(
                     classDeclaration.packageName.asString(),
                     classDeclaration.simpleName.asString()
                 )
             )
-            .primaryConstructor(buildConstructor())
-            .addProperties(buildConstructorProperties())
-            .addProperty(createSharedPreferencesLazyProperty())
-            .addProperties(buildAllProperties())
+            .applyConstructor()
+            .applySharedPreferencesLazyProperty()
+            .applyAllPropertiesAndFunctions()
             .build()
     }
 
     /**
-     * Builds the constructor. Contains the context as a parameter
+     * Applies the constructor and properties. Contains the context as a parameter
      */
-    private fun buildConstructor(): FunSpec {
-        return FunSpec.constructorBuilder()
-            .addParameter(contextField.toParameterSpec())
-            .build()
-    }
-
-    /**
-     * Builds the constructor parameters as properties to modify
-     * their visibility
-     */
-    private fun buildConstructorProperties(): List<PropertySpec> {
-        return listOf(
+    private fun TypeSpec.Builder.applyConstructor(): TypeSpec.Builder {
+        return primaryConstructor(
+            FunSpec.constructorBuilder()
+                .addParameter(contextField.toParameterSpec())
+                .build()
+        ).addProperty(
             contextField
                 .toPropertySpecBuilder(true, KModifier.PRIVATE)
                 .build()
@@ -116,34 +109,53 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
     }
 
     /**
-     * Creates the SharedPreferences property as a lazy delegate
+     * Applies the SharedPreferences property as a lazy delegate
      */
-    private fun createSharedPreferencesLazyProperty(): PropertySpec {
-        return PropertySpec.builder(sharedPreferencesField.name, sharedPreferencesField.type)
-            .delegate(
-                CodeBlock.builder()
-                    .beginControlFlow("lazy")
-                    .addStatement(
-                        "context.getSharedPreferences(%S, Context.MODE_PRIVATE)",
-                        arcticTern.preferenceFile
-                    )
-                    .endControlFlow()
-                    .build()
-            )
-            .build()
+    private fun TypeSpec.Builder.applySharedPreferencesLazyProperty(): TypeSpec.Builder {
+        return addProperty(
+            PropertySpec.builder(sharedPreferencesField.name, sharedPreferencesField.type)
+                .delegate(
+                    CodeBlock.builder()
+                        .beginControlFlow("lazy")
+                        .addStatement(
+                            "context.getSharedPreferences(%S, Context.MODE_PRIVATE)",
+                            arcticTern.preferenceFile
+                        )
+                        .endControlFlow()
+                        .build()
+                )
+                .build()
+        )
     }
 
     /**
-     * Properties
+     * Applies the properties and functions. Includes:
+     * - Private ArcticTernPreference property
+     * - Public property that delegates to the preference
+     * - Optional: Flow property
+     * - Optional: Delete function
      */
-    private fun buildAllProperties(): List<PropertySpec> {
-        return properties.map { (propDeclaration, property) ->
-            val internalPropName = "${propDeclaration.simpleName.asString()}Internal"
-            listOf(
-                buildLazyPreferenceProperty(internalPropName, propDeclaration, property),
-                buildPropertyOverride(internalPropName, propDeclaration)
-            )
-        }.flatten()
+    private fun TypeSpec.Builder.applyAllPropertiesAndFunctions(): TypeSpec.Builder {
+        return addProperties(
+            properties.map { (propDeclaration, property) ->
+                val internalPropName = "${propDeclaration.simpleName.asString()}Internal"
+                listOfNotNull(
+                    buildLazyPreferenceProperty(internalPropName, propDeclaration, property),
+                    buildPropertyOverride(internalPropName, propDeclaration),
+                    if (property.withFlow)
+                        buildFlowProperty(internalPropName, propDeclaration)
+                    else null
+                )
+            }.flatten()
+        ).addFunctions(
+            properties.mapNotNull { (propDeclaration, property) ->
+                val internalPropName = "${propDeclaration.simpleName.asString()}Internal"
+                if (property.withDelete) buildDeleteFunction(
+                    internalPropName,
+                    propDeclaration
+                ) else null
+            }
+        )
     }
 
     /**
@@ -260,6 +272,41 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                     .addStatement("return %L.value", internalPropName)
                     .build()
             )
+            .build()
+    }
+
+    /**
+     * Builds the flow property
+     */
+    private fun buildFlowProperty(
+        internalPropName: String,
+        propertyDeclaration: KSPropertyDeclaration
+    ): PropertySpec {
+        return PropertySpec.builder(
+            "${propertyDeclaration.simpleName.asString()}Flow",
+            flowField.type.parameterizedBy(
+                propertyDeclaration.className.toNullable(
+                    propertyDeclaration.isNullable
+                )
+            )
+        )
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return %L.observe()", internalPropName)
+                    .build()
+            )
+            .build()
+    }
+
+    /**
+     * Builds the delete function
+     */
+    private fun buildDeleteFunction(
+        internalPropName: String,
+        propertyDeclaration: KSPropertyDeclaration
+    ): FunSpec {
+        return FunSpec.builder("delete${propertyDeclaration.simpleName.asString().capitalize()}")
+            .addStatement("%L.delete()", internalPropName)
             .build()
     }
 }
