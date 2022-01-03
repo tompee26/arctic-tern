@@ -22,4 +22,16 @@ internal abstract class SamplePreference {
 
     @ArcticTern.Property
     open var nullableStringPreference: String? = null
+
+    @ArcticTern.Property
+    open var stringSetPreference: Set<String> = setOf()
+
+    @ArcticTern.Property
+    open var nullableStringSetPreference: Set<String>? = null
+
+    @ArcticTern.Property
+    open var nullableStringSetNullablePreference: Set<String?>? = setOf()
+
+    @ArcticTern.Property
+    open var stringSetNullablePreference: Set<String?> = setOf()
 }

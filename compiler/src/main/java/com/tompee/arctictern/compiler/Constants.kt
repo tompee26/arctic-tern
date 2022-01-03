@@ -5,25 +5,46 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LONG
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.STRING
 import com.tompee.arctictern.compiler.entities.DataType
 import com.tompee.arctictern.compiler.entities.Field
 
 /**
  * Set of supported files
- * // TODO: Support collection types and custom types
  */
 internal val supportedTypes = setOf(
-    DataType(INT, true, "getInt", "putInt"),
-    DataType(INT, false, "getInt", "putInt"),
-    DataType(BOOLEAN, true, "getBoolean", "putBoolean"),
-    DataType(BOOLEAN, false, "getBoolean", "putBoolean"),
-    DataType(FLOAT, true, "getFloat", "putFloat"),
-    DataType(FLOAT, false, "getFloat", "putFloat"),
-    DataType(LONG, true, "getLong", "putLong"),
-    DataType(LONG, false, "getLong", "putLong"),
-    DataType(STRING, true, "getString", "putString"),
-    DataType(STRING, false, "getString", "putString"),
+    DataType(INT, "getInt(%L, %L)", "putInt(%L, %L)"),
+    DataType(INT, "getInt(%L, %L)", "putInt(%L, %L)"),
+    DataType(BOOLEAN, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
+    DataType(BOOLEAN, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
+    DataType(FLOAT, "getFloat(%L, %L)", "putFloat(%L, %L)"),
+    DataType(FLOAT, "getFloat(%L, %L)", "putFloat(%L, %L)"),
+    DataType(LONG, "getLong(%L, %L)", "putLong(%L, %L)"),
+    DataType(LONG, "getLong(%L, %L)", "putLong(%L, %L)"),
+    DataType(STRING.copy(true), "getString(%L, %L)", "putString(%L, %L)"),
+    DataType(STRING, "getString(%L, %L).orEmpty()", "putString(%L, %L)"),
+    DataType(
+        SET.parameterizedBy(STRING).copy(true),
+        "getStringSet(%L, %L)",
+        "putStringSet(%L, %L)"
+    ),
+    DataType(
+        SET.parameterizedBy(STRING),
+        "getStringSet(%L, %L).orEmpty()",
+        "putStringSet(%L, %L)"
+    ),
+    DataType(
+        SET.parameterizedBy(STRING.copy(true)).copy(true),
+        "getStringSet(%L, %L)",
+        "putStringSet(%L, %L)"
+    ),
+    DataType(
+        SET.parameterizedBy(STRING.copy(true)),
+        "getStringSet(%L, %L).orEmpty()",
+        "putStringSet(%L, %L)"
+    ),
 )
 
 /**
