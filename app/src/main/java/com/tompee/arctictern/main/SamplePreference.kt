@@ -37,4 +37,7 @@ internal abstract class SamplePreference {
 
     @ArcticTern.ObjectProperty(IntWrapper.DataSerializer::class)
     open var intWrapper: IntWrapper = IntWrapper(20)
+
+    @ArcticTern.ObjectProperty(IntWrapper.DataNullableSerializer::class)
+    open var intNullableWrapper: IntWrapper? = null
 }

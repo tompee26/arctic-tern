@@ -14,4 +14,16 @@ internal data class IntWrapper(val intData: Int) {
             return IntWrapper(Integer.parseInt(serializedString))
         }
     }
+
+    class DataNullableSerializer : Serializer<IntWrapper?> {
+
+        override fun serialize(input: IntWrapper?): String {
+            return input?.intData?.toString().orEmpty()
+        }
+
+        override fun deserialize(serializedString: String): IntWrapper? {
+            return if (serializedString.isEmpty()) null
+            else IntWrapper(Integer.parseInt(serializedString))
+        }
+    }
 }
