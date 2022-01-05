@@ -12,35 +12,35 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.toNullable
 
-internal class FactoryWriter(
+internal class ManagerWriter(
     private val classDeclaration: KSClassDeclaration,
     private val fileSpecs: Map<FileSpec, KSClassDeclaration>
 ) {
 
     companion object {
 
-        private const val FACTORY_NAME = "ArcticTernFactory"
+        private const val MANAGER_NAME = "ArcticTernManager"
     }
 
-    private val factoryTypeName =
-        ClassName(classDeclaration.packageName.asString(), "ArcticTernFactory")
+    private val managerTypeName =
+        ClassName(classDeclaration.packageName.asString(), MANAGER_NAME)
 
-    fun createFactory(): FileSpec {
-        return FileSpec.builder(classDeclaration.packageName.asString(), FACTORY_NAME)
+    fun createManager(): FileSpec {
+        return FileSpec.builder(classDeclaration.packageName.asString(), MANAGER_NAME)
             .addType(buildClass())
             .build()
     }
 
     /**
      * Build the class. The hierarchy will be
-     * Factory class with constructor
+     * Manager class with constructor
      *   Companion object
      *     Private instance
      *     Double-check getters
      *   Generator functions
      */
     private fun buildClass(): TypeSpec {
-        return TypeSpec.classBuilder(FACTORY_NAME)
+        return TypeSpec.classBuilder(MANAGER_NAME)
             .addModifiers(listOfNotNull(classDeclaration.getVisibility().toKModifier()))
             .applyConstructor()
             .applyCompanionObject()
@@ -71,7 +71,7 @@ internal class FactoryWriter(
         return addType(
             TypeSpec.companionObjectBuilder()
                 .addProperty(
-                    PropertySpec.builder("instance", factoryTypeName.toNullable(true))
+                    PropertySpec.builder("instance", managerTypeName.toNullable(true))
                         .mutable(true)
                         .addModifiers(KModifier.PRIVATE)
                         .initializer("null")
@@ -79,7 +79,7 @@ internal class FactoryWriter(
                 )
                 .addFunction(
                     FunSpec.builder("getInstance")
-                        .returns(factoryTypeName)
+                        .returns(managerTypeName)
                         .addParameter(contextField.name, contextField.type)
                         .addCode(
                             CodeBlock.builder()
@@ -88,7 +88,7 @@ internal class FactoryWriter(
                                 .beginControlFlow("return synchronized(this)")
                                 .addStatement("val doubleCheckInstance = instance")
                                 .beginControlFlow("doubleCheckInstance ?: run ")
-                                .addStatement("val newInstance = ArcticTernFactory(context)")
+                                .addStatement("val newInstance = $MANAGER_NAME(context)")
                                 .addStatement("instance = newInstance")
                                 .addStatement("newInstance")
                                 .endControlFlow()
