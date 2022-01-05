@@ -107,12 +107,19 @@ internal class FactoryWriter(
     private fun TypeSpec.Builder.applyGeneratorFunctions(): TypeSpec.Builder {
         return addFunctions(
             fileSpecs.map { (spec, clazz) ->
-                FunSpec.builder("create${clazz.simpleName.asString()}")
-                    .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
-                    .returns(ClassName(spec.packageName, spec.name))
-                    .addStatement("return %L(context)", spec.name)
-                    .build()
-            }
+                listOf(
+                    FunSpec.builder("create${clazz.simpleName.asString()}")
+                        .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
+                        .returns(ClassName(spec.packageName, spec.name))
+                        .addStatement("return %L(context)", spec.name)
+                        .build(),
+                    FunSpec.builder("create${spec.name}")
+                        .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
+                        .returns(ClassName(spec.packageName, spec.name))
+                        .addStatement("return %L(context)", spec.name)
+                        .build()
+                )
+            }.flatten()
         )
     }
 }

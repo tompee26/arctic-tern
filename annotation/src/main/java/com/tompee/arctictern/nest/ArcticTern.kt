@@ -5,7 +5,12 @@ import kotlin.reflect.KClass
 /**
  * Default key identifier
  */
-const val DEFAULT_KEY = "arcticterndefault"
+const val DEFAULT_KEY = "arctic_tern_default"
+
+/**
+ * Default name identifier
+ */
+const val DEFAULT_NAME = "arctic_tern_name_default"
 
 /**
  * A class annotated with this will have a generated functions that can be used to
@@ -17,12 +22,17 @@ const val DEFAULT_KEY = "arcticterndefault"
  * To take advantage of the custom properties and functions such as flow and delete, use the
  * generated type instead of the target abstract class.
  *
+ * @property name the generated file name. If not provided it will be ArcticTern + <target class>.
  * @property preferenceFile the preference filename
  * @property version version code
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ArcticTern(val preferenceFile: String, val version: Int) {
+annotation class ArcticTern(
+    val name: String = DEFAULT_NAME,
+    val preferenceFile: String,
+    val version: Int
+) {
 
     /**
      * Denotes a var property that can be used to get and set the value
