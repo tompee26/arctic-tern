@@ -46,10 +46,10 @@ class ArcticTernProcessorProvider : SymbolProcessorProvider {
                     .map { PreferenceWriter(it).createFile() }
 
                 filesToWrite.addAll(preferences)
-                filesToWrite += FactoryWriter(
+                filesToWrite += ManagerWriter(
                     appSymbol,
                     preferences.zip(annotatedTypes).toMap()
-                ).createFactory()
+                ).createManager()
             } catch (e: ProcessingException) {
                 logger.error(e.message.orEmpty(), e.node)
             } catch (e: Throwable) {
