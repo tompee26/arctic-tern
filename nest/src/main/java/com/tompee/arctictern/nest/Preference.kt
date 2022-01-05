@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.onStart
  *                       this preference
  * @property sharedPreferences the [SharedPreferences] instance
  */
-class ArcticTernPreference<T>(
+class Preference<T>(
     val key: String,
     val defaultValue: T,
     private val valueProvider: (SharedPreferences, String, T) -> T,

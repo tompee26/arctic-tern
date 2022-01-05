@@ -7,7 +7,9 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.toNullable
@@ -45,6 +47,7 @@ internal class ManagerWriter(
             .applyConstructor()
             .applyCompanionObject()
             .applyGeneratorFunctions()
+            .applyMigration()
             .build()
     }
 
@@ -121,5 +124,40 @@ internal class ManagerWriter(
                 )
             }.flatten()
         )
+    }
+
+    /**
+     * Applies initialization and migration
+     */
+    private fun TypeSpec.Builder.applyMigration(): TypeSpec.Builder {
+        return addProperty(
+            PropertySpec.builder(
+                "migratableSet",
+                SET.parameterizedBy(migratableField.type),
+                KModifier.PRIVATE
+            )
+                .getter(
+                    FunSpec.getterBuilder()
+                        .addStatement("val set = setOf(")
+                        .apply {
+                            fileSpecs.map { (spec, _) ->
+                                "${spec.name}(${contextField.name}),"
+                            }
+                                .forEach { addStatement(it) }
+                        }
+                        .addStatement(")")
+                        .addStatement("return set")
+                        .build()
+                )
+                .build()
+        )
+            .addFunction(
+                FunSpec.builder("migrate")
+                    .beginControlFlow("migratableSet.forEach")
+                    .addStatement("it.initialize()")
+                    .addStatement("it.migrate()")
+                    .endControlFlow()
+                    .build()
+            )
     }
 }
