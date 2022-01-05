@@ -2,7 +2,7 @@ package com.tompee.arctictern.main
 
 import com.tompee.arctictern.nest.ArcticTern
 
-@ArcticTern(preferenceFile = "pref_sample", version = 1)
+@ArcticTern(name = "DataPreference", preferenceFile = "pref_sample", version = 1)
 internal abstract class SamplePreference {
 
     @ArcticTern.Property

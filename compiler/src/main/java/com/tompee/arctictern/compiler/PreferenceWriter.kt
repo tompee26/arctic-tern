@@ -15,6 +15,7 @@ import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.generators.ObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.StandardMemberGenerator
 import com.tompee.arctictern.nest.ArcticTern
+import com.tompee.arctictern.nest.DEFAULT_NAME
 
 internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration) {
 
@@ -26,10 +27,13 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
     /**
      * Class name
      */
-    private val className = ClassName(
-        classDeclaration.packageName.asString(),
-        "ArcticTern${classDeclaration.simpleName.asString()}"
-    )
+    private val className = arcticTern.name.let {
+        ClassName(
+            classDeclaration.packageName.asString(),
+            if (it == DEFAULT_NAME) "ArcticTern${classDeclaration.simpleName.asString()}"
+            else it
+        )
+    }
 
     private val standardMemberGenerator = StandardMemberGenerator(classDeclaration)
     private val objectMemberGenerator = ObjectMemberGenerator(classDeclaration)
