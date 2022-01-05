@@ -16,12 +16,8 @@ import com.tompee.arctictern.compiler.entities.Field
  */
 internal val supportedTypes = setOf(
     DataType(INT, "getInt(%L, %L)", "putInt(%L, %L)"),
-    DataType(INT, "getInt(%L, %L)", "putInt(%L, %L)"),
-    DataType(BOOLEAN, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
     DataType(BOOLEAN, "getBoolean(%L, %L)", "putBoolean(%L, %L)"),
     DataType(FLOAT, "getFloat(%L, %L)", "putFloat(%L, %L)"),
-    DataType(FLOAT, "getFloat(%L, %L)", "putFloat(%L, %L)"),
-    DataType(LONG, "getLong(%L, %L)", "putLong(%L, %L)"),
     DataType(LONG, "getLong(%L, %L)", "putLong(%L, %L)"),
     DataType(STRING.copy(true), "getString(%L, %L)", "putString(%L, %L)"),
     DataType(STRING, "getString(%L, %L).orEmpty()", "putString(%L, %L)"),
@@ -67,8 +63,8 @@ internal val sharedPreferencesField = Field(
  * Arctic Tern Preference field
  */
 internal val preferenceField = Field(
-    "arcticTernPreference",
-    ClassName("com.tompee.arctictern.nest", "ArcticTernPreference")
+    "preference",
+    ClassName("com.tompee.arctictern.nest", "Preference")
 )
 
 /**
@@ -77,4 +73,12 @@ internal val preferenceField = Field(
 internal val flowField = Field(
     "flow",
     ClassName("kotlinx.coroutines.flow", "Flow")
+)
+
+/**
+ * Migratable field
+ */
+internal val migratableField = Field(
+    "migratable",
+    ClassName("com.tompee.arctictern.nest", "Migratable")
 )

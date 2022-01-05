@@ -35,6 +35,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         )
     }
 
+    private val migratableWriter = MigratableWriter(arcticTern)
     private val standardMemberGenerator = StandardMemberGenerator(classDeclaration)
     private val objectMemberGenerator = ObjectMemberGenerator(classDeclaration)
 
@@ -60,6 +61,8 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      *   Optional delete functions
      */
     private fun buildClass(): TypeSpec {
+        val companionBuilder = TypeSpec.companionObjectBuilder()
+            .apply { migratableWriter.applyCompanion(this) }
         return TypeSpec.classBuilder(className)
             .addModifiers(listOfNotNull(classDeclaration.getVisibility().toKModifier()))
             .superclass(
@@ -68,9 +71,12 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                     classDeclaration.simpleName.asString()
                 )
             )
+            .addSuperinterface(migratableField.type)
             .applyConstructor()
+            .apply { migratableWriter.apply(this) }
             .applySharedPreferencesLazyProperty()
             .applyAllPropertiesAndFunctions()
+            .addType(companionBuilder.build())
             .build()
     }
 
