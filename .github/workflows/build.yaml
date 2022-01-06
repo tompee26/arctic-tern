@@ -27,4 +27,5 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          ndk: 21.4.7075529
           script: ./gradlew connectedAndroidTest
