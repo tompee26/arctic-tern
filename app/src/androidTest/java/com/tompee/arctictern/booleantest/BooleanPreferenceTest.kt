@@ -1,4 +1,4 @@
-package com.tompee.arctictern.inttest
+package com.tompee.arctictern.booleantest
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,16 +14,16 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-class IntPreferenceTest {
+class BooleanPreferenceTest {
 
     companion object {
 
-        private const val FILENAME: String = "pref_int"
+        private const val FILENAME: String = "pref_boolean"
         private const val VERSION_KEY: String = "arctic.pref.key.version"
-        private const val PROPERTY_KEY: String = "key_counter"
+        private const val PROPERTY_KEY: String = "isSuccessful"
     }
 
-    private lateinit var intPreference: ArcticTernIntPreference
+    private lateinit var booleanPreference: ArcticTernBooleanPreference
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var context: Context
 
@@ -32,7 +32,8 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        booleanPreference =
+            ArcticTernManager.getInstance(context).createArcticTernBooleanPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -51,40 +52,40 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        booleanPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(booleanPreference.isUpdated)
+        booleanPreference.migrate()
+        Assert.assertTrue(booleanPreference.isUpdated)
     }
 
     @Test
     fun `Test_default_value`() {
         Assert.assertFalse(sharedPreference.contains(PROPERTY_KEY))
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertFalse(booleanPreference.isSuccessful)
     }
 
     @Test
     fun `Test_set_get_value`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 15
-        Assert.assertTrue(intPreference.counter == 15)
-        Assert.assertTrue(intPreference.isCounterSet)
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        booleanPreference.isSuccessful = true
+        Assert.assertTrue(booleanPreference.isSuccessful)
+        Assert.assertTrue(booleanPreference.isIsSuccessfulSet)
     }
 
     @Test
     fun `Test_delete`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 18
-        Assert.assertTrue(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 18)
-        intPreference.deleteCounter()
-        Assert.assertFalse(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        booleanPreference.isSuccessful = true
+        Assert.assertTrue(booleanPreference.isIsSuccessfulSet)
+        Assert.assertTrue(booleanPreference.isSuccessful)
+        booleanPreference.deleteIsSuccessful()
+        Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
+        Assert.assertFalse(booleanPreference.isSuccessful)
     }
 }

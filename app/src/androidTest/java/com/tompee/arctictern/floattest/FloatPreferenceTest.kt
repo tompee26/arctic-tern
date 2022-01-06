@@ -1,4 +1,4 @@
-package com.tompee.arctictern.inttest
+package com.tompee.arctictern.floattest
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,16 +14,16 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-class IntPreferenceTest {
+class FloatPreferenceTest {
 
     companion object {
 
-        private const val FILENAME: String = "pref_int"
+        private const val FILENAME: String = "pref_float"
         private const val VERSION_KEY: String = "arctic.pref.key.version"
-        private const val PROPERTY_KEY: String = "key_counter"
+        private const val PROPERTY_KEY: String = "key_temperature"
     }
 
-    private lateinit var intPreference: ArcticTernIntPreference
+    private lateinit var floatPreference: ArcticTernFloatPreference
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var context: Context
 
@@ -32,7 +32,7 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        floatPreference = ArcticTernManager.getInstance(context).createArcticTernFloatPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -51,40 +51,40 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        floatPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(floatPreference.isUpdated)
+        floatPreference.migrate()
+        Assert.assertTrue(floatPreference.isUpdated)
     }
 
     @Test
     fun `Test_default_value`() {
         Assert.assertFalse(sharedPreference.contains(PROPERTY_KEY))
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
     }
 
     @Test
     fun `Test_set_get_value`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 15
-        Assert.assertTrue(intPreference.counter == 15)
-        Assert.assertTrue(intPreference.isCounterSet)
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
+        floatPreference.temperature = 15f
+        Assert.assertTrue(floatPreference.temperature == 15f)
+        Assert.assertTrue(floatPreference.isTemperatureSet)
     }
 
     @Test
     fun `Test_delete`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 18
-        Assert.assertTrue(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 18)
-        intPreference.deleteCounter()
-        Assert.assertFalse(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
+        floatPreference.temperature = 38f
+        Assert.assertTrue(floatPreference.isTemperatureSet)
+        Assert.assertTrue(floatPreference.temperature == 38f)
+        floatPreference.deleteTemperature()
+        Assert.assertFalse(floatPreference.isTemperatureSet)
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
     }
 }

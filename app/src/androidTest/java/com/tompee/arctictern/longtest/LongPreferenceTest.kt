@@ -1,4 +1,4 @@
-package com.tompee.arctictern.inttest
+package com.tompee.arctictern.longtest
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,16 +14,16 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-class IntPreferenceTest {
+class LongPreferenceTest {
 
     companion object {
 
-        private const val FILENAME: String = "pref_int"
+        private const val FILENAME: String = "pref_long"
         private const val VERSION_KEY: String = "arctic.pref.key.version"
-        private const val PROPERTY_KEY: String = "key_counter"
+        private const val PROPERTY_KEY: String = "key_timestamp"
     }
 
-    private lateinit var intPreference: ArcticTernIntPreference
+    private lateinit var longPreference: ArcticTernLongPreference
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var context: Context
 
@@ -32,7 +32,7 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        longPreference = ArcticTernManager.getInstance(context).createArcticTernLongPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -51,40 +51,40 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        longPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(longPreference.isUpdated)
+        longPreference.migrate()
+        Assert.assertTrue(longPreference.isUpdated)
     }
 
     @Test
     fun `Test_default_value`() {
         Assert.assertFalse(sharedPreference.contains(PROPERTY_KEY))
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(longPreference.timestamp == 123456789L)
     }
 
     @Test
     fun `Test_set_get_value`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 15
-        Assert.assertTrue(intPreference.counter == 15)
-        Assert.assertTrue(intPreference.isCounterSet)
+        Assert.assertTrue(longPreference.timestamp == 123456789L)
+        longPreference.timestamp = 387L
+        Assert.assertTrue(longPreference.timestamp == 387L)
+        Assert.assertTrue(longPreference.isTimestampSet)
     }
 
     @Test
     fun `Test_delete`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 18
-        Assert.assertTrue(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 18)
-        intPreference.deleteCounter()
-        Assert.assertFalse(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(longPreference.timestamp == 123456789L)
+        longPreference.timestamp = 387L
+        Assert.assertTrue(longPreference.isTimestampSet)
+        Assert.assertTrue(longPreference.timestamp == 387L)
+        longPreference.deleteTimestamp()
+        Assert.assertFalse(longPreference.isTimestampSet)
+        Assert.assertTrue(longPreference.timestamp == 123456789L)
     }
 }
