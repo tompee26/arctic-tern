@@ -15,10 +15,13 @@ jobs:
           ./gradlew clean build
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: Run UI Tests
-        uses: vgaidarji/android-github-actions-emulator@v1.0.1
+      - name: Run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          script: ./gradlew connectedAndroidTest
