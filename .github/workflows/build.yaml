@@ -15,7 +15,7 @@ jobs:
           ./gradlew clean build
 
   test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
