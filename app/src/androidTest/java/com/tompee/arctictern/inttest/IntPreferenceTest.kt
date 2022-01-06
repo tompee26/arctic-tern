@@ -2,16 +2,16 @@ package com.tompee.arctictern.inttest
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.tompee.arctictern.ArcticTernManager
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
@@ -30,18 +30,18 @@ class IntPreferenceTest {
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
-        clearAllSharedPreferences(context)
         sharedPreference = context.getSharedPreferences("pref_int", Context.MODE_PRIVATE)
+        sharedPreference.clearAll()
         intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
     }
 
-    private fun clearAllSharedPreferences(context: Context) {
-        val sharedPreferencesPath =
-            File(context.filesDir.parentFile!!.absolutePath + File.separator + "shared_prefs")
-        sharedPreferencesPath.listFiles()?.forEach { file ->
-            context.getSharedPreferences(file.nameWithoutExtension, Context.MODE_PRIVATE)
-                .edit().clear().commit()
-        }
+    private fun SharedPreferences.clearAll() {
+        edit().clear().commit()
+    }
+
+    @After
+    fun teardown() {
+        sharedPreference.clearAll()
     }
 
     @Test
@@ -78,6 +78,7 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_delete`() {
+        Log.d("tompee tompee", intPreference.counter.toString())
         Assert.assertTrue(intPreference.counter == 12)
         intPreference.counter = 18
         Assert.assertTrue(intPreference.isCounterSet)
