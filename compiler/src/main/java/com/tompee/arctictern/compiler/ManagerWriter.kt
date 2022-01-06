@@ -138,7 +138,7 @@ internal class ManagerWriter(
             )
                 .getter(
                     FunSpec.getterBuilder()
-                        .addStatement("val set = setOf(")
+                        .addStatement("val set = setOf<Migratable>(")
                         .apply {
                             fileSpecs.map { (spec, _) ->
                                 "${spec.name}(${contextField.name}),"

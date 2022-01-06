@@ -8,6 +8,7 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -104,6 +105,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
                 listOfNotNull(
                     buildLazyPreferenceProperty(internalPropName, it),
                     buildPropertyOverride(internalPropName, it),
+                    buildIsSetProperty(internalPropName, it),
                     if (it.annotation.withFlow)
                         buildFlowProperty(internalPropName, it)
                     else null
@@ -232,6 +234,25 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
             .getter(
                 FunSpec.getterBuilder()
                     .addStatement("return %L.value", internalPropName)
+                    .build()
+            )
+            .build()
+    }
+
+    /**
+     * Builds the is set property
+     */
+    private fun buildIsSetProperty(
+        internalPropName: String,
+        property: ObjectProperty
+    ): PropertySpec {
+        return PropertySpec.builder(
+            "is${property.prop.simpleName.asString().capitalize()}Set",
+            BOOLEAN
+        )
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return %L.isSet", internalPropName)
                     .build()
             )
             .build()

@@ -50,7 +50,7 @@ internal class MigratableWriter(private val annotation: ArcticTern) {
             FunSpec.builder("initialize")
                 .addModifiers(KModifier.OVERRIDE)
                 .beginControlFlow(
-                    "if (%L.contains(%L))",
+                    "if (!%L.contains(%L))",
                     sharedPreferencesField.name,
                     VERSION_KEY_NAME
                 )
@@ -71,7 +71,7 @@ internal class MigratableWriter(private val annotation: ArcticTern) {
                 .getter(
                     FunSpec.getterBuilder()
                         .addStatement(
-                            "if (%L.contains(%L)) return false",
+                            "if (!%L.contains(%L)) return false",
                             sharedPreferencesField.name,
                             VERSION_KEY_NAME
                         )
