@@ -6,12 +6,19 @@ object Libs {
         const val plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
         const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val reflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
-        const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
+        const val coroutines =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
     }
 
     object AndroidX {
         const val core = "androidx.core:core-ktx:${Versions.AndroidX.core}"
         const val appcompat = "androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}"
+
+        object Test {
+            const val runner = "androidx.test:runner:${Versions.AndroidX.test}"
+            const val rules = "androidx.test:rules:${Versions.AndroidX.test}"
+            const val ext = "androidx.test.ext:junit:${Versions.AndroidX.testExt}"
+        }
     }
 
     const val spotlessPlugin = "com.diffplug.spotless:spotless-plugin-gradle:${Versions.spotless}"
@@ -35,6 +42,5 @@ object Libs {
         const val ksp = "com.squareup:kotlinpoet-ksp:${Versions.KotlinPoet.core}"
         const val metadatajvm =
             "org.jetbrains.kotlinx:kotlinx-metadata-jvm:${Versions.KotlinPoet.jvm}"
-
     }
 }

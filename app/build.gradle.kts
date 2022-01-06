@@ -17,7 +17,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.tompee.arctictern.Runner"
     }
 
     buildTypes {
@@ -53,18 +53,24 @@ kotlin {
     sourceSets.release {
         kotlin.srcDir("build/generated/ksp/release/kotlin")
     }
+    sourceSets.androidTestDebug {
+        kotlin.srcDir("build/generated/ksp/debugAndroidTest/kotlin")
+    }
 }
 
 tasks.getByPath(":app:preBuild").dependsOn(copyTaskProvider.get())
 
 dependencies {
-    implementation(project(":nest"))
-    compileOnly(project(":annotation"))
-    ksp(project(":compiler"))
-
     implementation(Libs.Kotlin.stdlib)
     implementation(Libs.Kotlin.coroutines)
 
     implementation(Libs.AndroidX.core)
     implementation(Libs.AndroidX.appcompat)
+
+    androidTestImplementation(project(":nest"))
+    androidTestCompileOnly(project(":annotation"))
+    kspAndroidTest(project(":compiler"))
+    androidTestImplementation(Libs.AndroidX.Test.runner)
+    androidTestImplementation(Libs.AndroidX.Test.rules)
+    androidTestImplementation(Libs.AndroidX.Test.ext)
 }

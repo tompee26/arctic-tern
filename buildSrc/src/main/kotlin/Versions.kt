@@ -12,6 +12,8 @@ object Versions {
     object AndroidX {
         const val core = "1.7.0"
         const val appcompat = "1.4.0"
+        const val test = "1.4.0"
+        const val testExt = "1.1.3"
     }
 
     const val spotless = "6.1.0"
