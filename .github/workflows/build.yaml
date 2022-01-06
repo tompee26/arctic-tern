@@ -16,16 +16,9 @@ jobs:
 
   test:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        api-level: [ 26, 27, 28, 29, 30, 31 ]
     steps:
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: Run tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          ndk: 21.4.7075529
-          script: ./gradlew connectedAndroidTest
+      - name: Run UI Tests
+        uses: vgaidarji/android-github-actions-emulator@v1.0.1
