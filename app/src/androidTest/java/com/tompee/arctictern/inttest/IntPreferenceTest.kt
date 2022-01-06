@@ -40,7 +40,7 @@ class IntPreferenceTest {
             File(context.filesDir.parentFile!!.absolutePath + File.separator + "shared_prefs")
         sharedPreferencesPath.listFiles()?.forEach { file ->
             context.getSharedPreferences(file.nameWithoutExtension, Context.MODE_PRIVATE)
-                .edit { clear() }
+                .edit().clear().commit()
         }
     }
 
