@@ -24,7 +24,8 @@ const val DEFAULT_NAME = "arctic_tern_name_default"
  *
  * @property name the generated file name. If not provided it will be ArcticTern + <target class>.
  * @property preferenceFile the preference filename
- * @property version version code
+ * @property version non-negative version code. File version will be set to 0 at the beginning and
+ *                   will assume this value after migration.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
@@ -108,4 +109,17 @@ annotation class ArcticTern(
         val withFlow: Boolean = true,
         val withDelete: Boolean = true
     )
+
+    /**
+     * Marks a class as a migration implementation. Migration is incremental, meaning, all migrations
+     * will be executed one by one in order of target version until the current version is achieved.
+     * All previously executed migrations will not be executed again.
+     *
+     * There are a couple of ways to achieve data migration. The most versatile approach is
+     * implementing the Migration interface from the nest package. See the documentation of that
+     * interface for more information.
+     */
+    @Target(AnnotationTarget.CLASS)
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class Migration(val version: Int)
 }
