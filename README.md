@@ -40,7 +40,7 @@ kotlin {
 
 dependencies {
     implementation("io.github.tompee26:arctic-tern-nest:$latest_version")
-    compileOnly("io.github.tompee26:arctic-tern-annotation:$latest_version")
+    implementation("io.github.tompee26:arctic-tern-annotation:$latest_version")
     ksp("io.github.tompee26:arctic-tern-compiler:$latest_version")
 }
 ```
