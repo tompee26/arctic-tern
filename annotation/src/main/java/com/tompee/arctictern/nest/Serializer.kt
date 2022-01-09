@@ -12,7 +12,7 @@ interface Serializer<T> {
     fun serialize(input: T): String
 
     /**
-     * Converts the string into
+     * Converts the string into an instance of [T]
      */
-    fun deserialize(serializedString: String): T
+    fun deserialize(input: String): T
 }

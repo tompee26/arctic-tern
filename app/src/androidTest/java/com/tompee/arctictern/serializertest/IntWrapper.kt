@@ -1,10 +1,8 @@
 package com.tompee.arctictern.serializertest
 
-import com.tompee.arctictern.nest.Serializer
-
 data class IntWrapper(val value: Int) {
 
-    class MySerializer : Serializer<IntWrapper> {
+    class Serializer : com.tompee.arctictern.nest.Serializer<IntWrapper> {
 
         override fun serialize(input: IntWrapper): String {
             return input.value.toString()
@@ -12,6 +10,18 @@ data class IntWrapper(val value: Int) {
 
         override fun deserialize(serializedString: String): IntWrapper {
             return Integer.parseInt(serializedString).let(::IntWrapper)
+        }
+    }
+
+    class NullableSerializer : com.tompee.arctictern.nest.Serializer<IntWrapper?> {
+
+        override fun serialize(input: IntWrapper?): String {
+            return input?.value?.toString().orEmpty()
+        }
+
+        override fun deserialize(serializedString: String): IntWrapper? {
+            return if (serializedString.isEmpty()) null
+            else Integer.parseInt(serializedString).let(::IntWrapper)
         }
     }
 }
