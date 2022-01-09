@@ -32,7 +32,8 @@ class NullableStringSetPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        stringSetPreference = ArcticTernManager.getInstance(context).createNullableStringSetPreference()
+        stringSetPreference =
+            ArcticTernManager.getInstance(context).createArcticTernNullableStringSetPreference()
     }
 
     private fun SharedPreferences.clearAll() {

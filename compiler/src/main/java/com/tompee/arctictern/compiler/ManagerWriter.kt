@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.toNullable
 
@@ -113,7 +114,7 @@ internal class ManagerWriter(
                 listOf(
                     FunSpec.builder("create${clazz.simpleName.asString()}")
                         .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
-                        .returns(ClassName(spec.packageName, spec.name))
+                        .returns(clazz.toClassName())
                         .addStatement("return %L(context)", spec.name)
                         .build(),
                     FunSpec.builder("create${spec.name}")

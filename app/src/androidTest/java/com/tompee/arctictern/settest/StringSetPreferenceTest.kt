@@ -32,7 +32,8 @@ class StringSetPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        stringSetPreference = ArcticTernManager.getInstance(context).createStringSetPreference()
+        stringSetPreference =
+            ArcticTernManager.getInstance(context).createArcticTernStringSetPreference()
     }
 
     private fun SharedPreferences.clearAll() {

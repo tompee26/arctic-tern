@@ -32,7 +32,7 @@ class SerializerNullablePreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        serializerPreference = ArcticTernManager.getInstance(context).createSerializerNullablePreference()
+        serializerPreference = ArcticTernManager.getInstance(context).createArcticTernSerializerNullablePreference()
     }
 
     private fun SharedPreferences.clearAll() {
