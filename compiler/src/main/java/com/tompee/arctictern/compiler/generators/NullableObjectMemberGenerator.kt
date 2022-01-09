@@ -1,10 +1,15 @@
 package com.tompee.arctictern.compiler.generators
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.isOpen
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.BOOLEAN
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -12,13 +17,14 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
+import com.tompee.arctictern.compiler.ProcessingException
 import com.tompee.arctictern.compiler.checks.assert
 import com.tompee.arctictern.compiler.extensions.capitalize
+import com.tompee.arctictern.compiler.extensions.getAnnotation
 import com.tompee.arctictern.compiler.extensions.getKey
 import com.tompee.arctictern.compiler.extensions.isNullable
-import com.tompee.arctictern.compiler.extensions.isSupportedType
-import com.tompee.arctictern.compiler.extensions.preferenceGetter
-import com.tompee.arctictern.compiler.extensions.preferenceSetter
 import com.tompee.arctictern.compiler.extensions.toNullable
 import com.tompee.arctictern.compiler.extensions.typeName
 import com.tompee.arctictern.compiler.flowField
@@ -26,27 +32,68 @@ import com.tompee.arctictern.compiler.preferenceField
 import com.tompee.arctictern.compiler.sharedPreferencesField
 import com.tompee.arctictern.nest.ArcticTern
 
-internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : MemberGenerator {
+internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
+    MemberGenerator {
 
     /**
-     * Property associated with [ArcticTern.Property]
+     * Property associated with [ArcticTern.NullableObjectProperty]
      */
-    private data class Property(
+    private data class ObjectProperty(
         val prop: KSPropertyDeclaration,
-        val annotation: ArcticTern.Property
+        val annotation: ArcticTern.NullableObjectProperty,
+        val serializer: KSClassDeclaration,
+        val isObject: Boolean,
     )
 
     /**
-     * Annotated properties
+     * Annotated object properties
      */
-    private val properties = classDeclaration.getAllProperties()
-        .filter { it.getAnnotationsByType(ArcticTern.Property::class).any() }
-        .onEach {
-            it.assert("Only var properties are allowed") { isMutable }
-            it.assert("Properties must be open") { isOpen() }
-            it.assert("Unsupported type ${it.typeName}") { typeName.isSupportedType }
+    private val objectProperties = classDeclaration.getAllProperties()
+        .filter { it.getAnnotationsByType(ArcticTern.NullableObjectProperty::class).any() }
+        .map { prop ->
+            prop.assert("Only var properties are allowed") { isMutable }
+            prop.assert("Properties must be open") { isOpen() }
+
+            val type = prop.getAnnotation<ArcticTern.NullableObjectProperty>()
+                .arguments[0].value as KSType
+            val declaration = type.declaration as? KSClassDeclaration
+                ?: throw ProcessingException("Serializer provided is not a class", prop)
+
+            declaration.assert("Serializer must not be abstract") { !isAbstract() }
+            declaration.assert("Serializer is not a class or an object") {
+                classKind == ClassKind.CLASS || classKind == ClassKind.OBJECT
+            }
+
+            if (declaration.classKind == ClassKind.CLASS &&
+                declaration.primaryConstructor?.parameters?.isNotEmpty() == true
+            ) {
+                throw ProcessingException("Serializer must have a no-arg constructor", declaration)
+            }
+
+            val serializerClassName = ClassName("com.tompee.arctictern.nest", "NullableSerializer")
+
+            val serializer = declaration.getAllSuperTypes()
+                .firstOrNull { it.toClassName() == serializerClassName }
+                ?: throw ProcessingException("Class does not implement NullableSerializer", declaration)
+
+            when (serializer.toTypeName()) {
+                serializerClassName.parameterizedBy(prop.typeName),
+                serializerClassName.parameterizedBy(prop.typeName.copy(true)) -> {
+                }
+                else -> {
+                    throw ProcessingException("Serializer type is not compatible", declaration)
+                }
+            }
+
+            val annotation =
+                prop.getAnnotationsByType(ArcticTern.NullableObjectProperty::class).first()
+            ObjectProperty(
+                prop,
+                annotation,
+                declaration,
+                declaration.classKind == ClassKind.OBJECT
+            )
         }
-        .map { Property(it, it.getAnnotationsByType(ArcticTern.Property::class).first()) }
         .toList()
 
     /**
@@ -54,7 +101,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
      */
     override fun applyAll(builder: TypeSpec.Builder): TypeSpec.Builder {
         return builder.addProperties(
-            properties.map {
+            objectProperties.map {
                 val internalPropName = "${it.prop.simpleName.asString()}Internal"
                 listOfNotNull(
                     buildLazyPreferenceProperty(internalPropName, it),
@@ -66,19 +113,20 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                 )
             }.flatten()
         ).addFunctions(
-            properties.mapNotNull {
+            objectProperties.mapNotNull {
                 val internalPropName = "${it.prop.simpleName.asString()}Internal"
-                if (it.annotation.withDelete) buildDeleteFunction(internalPropName, it) else null
+                if (it.annotation.withDelete) buildDeleteFunction(internalPropName, it)
+                else null
             }
         )
     }
 
     /**
-     * Builds the private lazy ArcticTernPreference property
+     * Builds the private lazy object ArcticTernPreference property
      */
     private fun buildLazyPreferenceProperty(
         internalPropName: String,
-        property: Property
+        property: ObjectProperty
     ): PropertySpec {
         val preferenceName = "preference"
         val keyName = "key"
@@ -109,10 +157,18 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                                 defaultValueName
                             )
                             .addStatement(
-                                "$preferenceName.${property.prop.typeName.preferenceGetter}",
-                                keyName,
-                                defaultValueName,
+                                if (property.isObject) "val serializer = %L" else "val serializer = %L()",
+                                property.serializer.qualifiedName?.asString().orEmpty()
                             )
+                            .addStatement(
+                                "val stringifiedDefaultValue = serializer.serialize(%L)",
+                                defaultValueName
+                            )
+                            .addStatement(
+                                "val stringifiedValue = $preferenceName.getString(%L, stringifiedDefaultValue)",
+                                keyName
+                            )
+                            .addStatement("serializer.deserialize(stringifiedValue)")
                             .build()
                     )
                     .endControlFlow()
@@ -127,9 +183,16 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                                 valueName
                             )
                             .addStatement(
-                                "$preferenceName.edit().${property.prop.typeName.preferenceSetter}.apply()",
-                                keyName,
+                                if (property.isObject) "val serializer = %L" else "val serializer = %L()",
+                                property.serializer.qualifiedName?.asString().orEmpty()
+                            )
+                            .addStatement(
+                                "val stringifiedValue = serializer.serialize(%L)",
                                 valueName
+                            )
+                            .addStatement(
+                                "$preferenceName.edit().putString(%L, stringifiedValue).apply()",
+                                keyName
                             )
                             .build()
                     )
@@ -152,7 +215,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
      */
     private fun buildPropertyOverride(
         internalPropName: String,
-        property: Property
+        property: ObjectProperty
     ): PropertySpec {
         return PropertySpec.builder(
             property.prop.simpleName.asString(),
@@ -182,7 +245,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
      */
     private fun buildIsSetProperty(
         internalPropName: String,
-        property: Property
+        property: ObjectProperty
     ): PropertySpec {
         return PropertySpec.builder(
             "is${property.prop.simpleName.asString().capitalize()}Set",
@@ -201,12 +264,11 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
      */
     private fun buildFlowProperty(
         internalPropName: String,
-        property: Property
+        property: ObjectProperty
     ): PropertySpec {
         return PropertySpec.builder(
             "${property.prop.simpleName.asString()}Flow",
-            flowField.type
-                .parameterizedBy(property.prop.let { it.typeName.toNullable(it.isNullable) })
+            flowField.type.parameterizedBy(property.prop.let { it.typeName.toNullable(it.isNullable) })
         )
             .getter(
                 FunSpec.getterBuilder()
@@ -221,7 +283,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
      */
     private fun buildDeleteFunction(
         internalPropName: String,
-        property: Property
+        property: ObjectProperty
     ): FunSpec {
         return FunSpec.builder("delete${property.prop.simpleName.asString().capitalize()}")
             .addStatement("%L.delete()", internalPropName)

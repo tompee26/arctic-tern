@@ -5,7 +5,7 @@ import com.squareup.kotlinpoet.TypeSpec
 /**
  * Parses the list of properties that will be the source of generated properties and functions
  */
-internal interface MemberGenerator<T : Annotation> {
+internal interface MemberGenerator {
 
     /**
      * Applies all properties and functions

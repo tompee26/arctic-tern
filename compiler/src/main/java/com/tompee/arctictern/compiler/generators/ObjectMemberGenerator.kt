@@ -32,8 +32,7 @@ import com.tompee.arctictern.compiler.preferenceField
 import com.tompee.arctictern.compiler.sharedPreferencesField
 import com.tompee.arctictern.nest.ArcticTern
 
-internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
-    MemberGenerator<ArcticTern.Property> {
+internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : MemberGenerator {
 
     /**
      * Property associated with [ArcticTern.ObjectProperty]

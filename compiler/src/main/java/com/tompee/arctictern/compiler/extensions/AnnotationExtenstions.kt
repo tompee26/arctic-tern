@@ -23,3 +23,13 @@ internal fun ArcticTern.ObjectProperty.getKey(property: KSPropertyDeclaration): 
         "key_${property.simpleName.asString()}"
     } else key
 }
+
+/**
+ * Returns the key that will be used as a shared preference key.
+ * Will generate it from [property] if not provided
+ */
+internal fun ArcticTern.NullableObjectProperty.getKey(property: KSPropertyDeclaration): String {
+    return if (key == DEFAULT_KEY) {
+        "key_${property.simpleName.asString()}"
+    } else key
+}

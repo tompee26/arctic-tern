@@ -12,6 +12,7 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toKModifier
+import com.tompee.arctictern.compiler.generators.NullableObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.ObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.StandardMemberGenerator
 import com.tompee.arctictern.nest.ArcticTern
@@ -38,6 +39,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
     private val migratableWriter = MigratableWriter(arcticTern)
     private val standardMemberGenerator = StandardMemberGenerator(classDeclaration)
     private val objectMemberGenerator = ObjectMemberGenerator(classDeclaration)
+    private val nullableObjectMemberGenerator = NullableObjectMemberGenerator(classDeclaration)
 
     init {
         // Validate that only interface can be annotated
@@ -127,8 +129,8 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      * - Optional: Delete function
      */
     private fun TypeSpec.Builder.applyAllPropertiesAndFunctions(): TypeSpec.Builder {
-        return standardMemberGenerator.applyAll(this).apply {
-            objectMemberGenerator.applyAll(this)
-        }
+        return standardMemberGenerator.applyAll(this)
+            .apply(objectMemberGenerator::applyAll)
+            .apply(nullableObjectMemberGenerator::applyAll)
     }
 }

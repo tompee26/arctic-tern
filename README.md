@@ -105,24 +105,46 @@ Similar to `Property` but this allows for custom object persistence. A `Serializ
 ```
 data class IntWrapper(val intData: Int) {
 
-    class IntWrapperSerializer : Serializer<IntWrapper> {
+    class Serializer : Serializer<IntWrapper> {
 
         override fun serialize(input: IntWrapper): String {
             return input.intData.toString()
         }
 
-        override fun deserialize(serializedString: String): IntWrapper {
-            return IntWrapper(Integer.parseInt(serializedString))
+        override fun deserialize(input: String): IntWrapper {
+            return IntWrapper(Integer.parseInt(input))
         }
     }
 ```
 
 ```
-@ArcticTern.ObjectProperty(IntWrapperSerializer::class)
+@ArcticTern.ObjectProperty(IntWrapper.Serializer::class)
 open var counter : IntWrapper = IntWrapper(0)
 ```
 
-### NullableObjectProperty (TODO)
+### NullableObjectProperty
+
+Similar to `ObjectProperty` but this allows for nullable inputs and outputs. A `NullableSerializer` implementation is required in the annotation.
+
+```
+data class StringWrapper(val value: String) {
+
+    class Serializer : NullableSerializer<StringWrapper?> {
+
+        override fun serialize(input: StringWrapper?): String? {
+            return input?.value
+        }
+
+        override fun deserialize(input: String?): StringWrapper? {
+            return input?.let(::StringWrapper)
+        }
+    }
+```
+
+```
+@ArcticTern.NullableObjectProperty(StringWrapper.Serializer::class)
+open var counter : IntWrapper = IntWrapper(0)
+```
 
 ## Supported Types
 
