@@ -1,4 +1,4 @@
-package com.tompee.arctictern.inttest
+package com.tompee.arctictern.stringtest
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,16 +14,16 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-class IntPreferenceTest {
+class StringPreferenceTest {
 
     companion object {
 
-        private const val FILENAME: String = "pref_int"
+        private const val FILENAME: String = "pref_string"
         private const val VERSION_KEY: String = "arctic.pref.key.version"
-        private const val PROPERTY_KEY: String = "key_counter"
+        private const val PROPERTY_KEY: String = "key_name"
     }
 
-    private lateinit var intPreference: ArcticTernIntPreference
+    private lateinit var stringPreference: ArcticTernStringPreference
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var context: Context
 
@@ -32,7 +32,7 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        stringPreference = ArcticTernManager.getInstance(context).createStringPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -51,40 +51,40 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        stringPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(stringPreference.isUpdated)
+        stringPreference.migrate()
+        Assert.assertTrue(stringPreference.isUpdated)
     }
 
     @Test
     fun `Test_default_value`() {
         Assert.assertFalse(sharedPreference.contains(PROPERTY_KEY))
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(stringPreference.name == "arctictern")
     }
 
     @Test
     fun `Test_set_get_value`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 15
-        Assert.assertTrue(intPreference.counter == 15)
-        Assert.assertTrue(intPreference.isCounterSet)
+        Assert.assertTrue(stringPreference.name == "arctictern")
+        stringPreference.name = "ternarctic"
+        Assert.assertTrue(stringPreference.name == "ternarctic")
+        Assert.assertTrue(stringPreference.isNameSet)
     }
 
     @Test
     fun `Test_delete`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 18
-        Assert.assertTrue(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 18)
-        intPreference.deleteCounter()
-        Assert.assertFalse(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(stringPreference.name == "arctictern")
+        stringPreference.name = "ternarctic"
+        Assert.assertTrue(stringPreference.isNameSet)
+        Assert.assertTrue(stringPreference.name == "ternarctic")
+        stringPreference.deleteName()
+        Assert.assertFalse(stringPreference.isNameSet)
+        Assert.assertTrue(stringPreference.name == "arctictern")
     }
 }

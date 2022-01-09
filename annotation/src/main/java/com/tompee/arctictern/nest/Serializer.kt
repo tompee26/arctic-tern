@@ -1,7 +1,7 @@
 package com.tompee.arctictern.nest
 
 /**
- * An interface that must be implement to allow serialization to non-nullable strings and
+ * An interface that must be implemented to allow serialization to non-nullable strings and
  * deserialization using non-nullable inputs
  */
 interface Serializer<T> {

@@ -68,7 +68,7 @@ dependencies {
     implementation(Libs.AndroidX.appcompat)
 
     androidTestImplementation(project(":nest"))
-    androidTestCompileOnly(project(":annotation"))
+    androidTestImplementation(project(":annotation"))
     kspAndroidTest(project(":compiler"))
     androidTestImplementation(Libs.AndroidX.Test.runner)
     androidTestImplementation(Libs.AndroidX.Test.rules)

@@ -1,4 +1,4 @@
-package com.tompee.arctictern.inttest
+package com.tompee.arctictern.serializertest
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,16 +14,16 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-class IntPreferenceTest {
+class SerializerPreferenceTest {
 
     companion object {
 
-        private const val FILENAME: String = "pref_int"
+        private const val FILENAME: String = "pref_serializer"
         private const val VERSION_KEY: String = "arctic.pref.key.version"
-        private const val PROPERTY_KEY: String = "key_counter"
+        private const val PROPERTY_KEY: String = "key_boxedInt"
     }
 
-    private lateinit var intPreference: ArcticTernIntPreference
+    private lateinit var serializerPreference: ArcticTernSerializerPreference
     private lateinit var sharedPreference: SharedPreferences
     private lateinit var context: Context
 
@@ -32,7 +32,7 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        serializerPreference = ArcticTernManager.getInstance(context).createSerializerPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -51,40 +51,40 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        serializerPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(serializerPreference.isUpdated)
+        serializerPreference.migrate()
+        Assert.assertTrue(serializerPreference.isUpdated)
     }
 
     @Test
     fun `Test_default_value`() {
         Assert.assertFalse(sharedPreference.contains(PROPERTY_KEY))
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(20))
     }
 
     @Test
     fun `Test_set_get_value`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 15
-        Assert.assertTrue(intPreference.counter == 15)
-        Assert.assertTrue(intPreference.isCounterSet)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(20))
+        serializerPreference.boxedInt = IntWrapper(30)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(30))
+        Assert.assertTrue(serializerPreference.isBoxedIntSet)
     }
 
     @Test
     fun `Test_delete`() {
-        Assert.assertTrue(intPreference.counter == 12)
-        intPreference.counter = 18
-        Assert.assertTrue(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 18)
-        intPreference.deleteCounter()
-        Assert.assertFalse(intPreference.isCounterSet)
-        Assert.assertTrue(intPreference.counter == 12)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(20))
+        serializerPreference.boxedInt = IntWrapper(50)
+        Assert.assertTrue(serializerPreference.isBoxedIntSet)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(50))
+        serializerPreference.deleteBoxedInt()
+        Assert.assertFalse(serializerPreference.isBoxedIntSet)
+        Assert.assertTrue(serializerPreference.boxedInt == IntWrapper(20))
     }
 }
