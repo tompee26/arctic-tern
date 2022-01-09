@@ -8,8 +8,8 @@ data class IntWrapper(val value: Int) {
             return input.value.toString()
         }
 
-        override fun deserialize(serializedString: String): IntWrapper {
-            return Integer.parseInt(serializedString).let(::IntWrapper)
+        override fun deserialize(input: String): IntWrapper {
+            return Integer.parseInt(input).let(::IntWrapper)
         }
     }
 
@@ -19,9 +19,9 @@ data class IntWrapper(val value: Int) {
             return input?.value?.toString().orEmpty()
         }
 
-        override fun deserialize(serializedString: String): IntWrapper? {
-            return if (serializedString.isEmpty()) null
-            else Integer.parseInt(serializedString).let(::IntWrapper)
+        override fun deserialize(input: String): IntWrapper? {
+            return if (input.isEmpty()) null
+            else Integer.parseInt(input).let(::IntWrapper)
         }
     }
 }

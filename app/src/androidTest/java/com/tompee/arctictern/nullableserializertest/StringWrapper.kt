@@ -11,8 +11,8 @@ data class StringWrapper(val value: String) {
             else input.value
         }
 
-        override fun deserialize(serializedString: String?): StringWrapper {
-            return serializedString.orEmpty().let(::StringWrapper)
+        override fun deserialize(input: String?): StringWrapper {
+            return input.orEmpty().let(::StringWrapper)
         }
     }
 
@@ -22,8 +22,8 @@ data class StringWrapper(val value: String) {
             return input?.value
         }
 
-        override fun deserialize(serializedString: String?): StringWrapper? {
-            return serializedString?.let(::StringWrapper)
+        override fun deserialize(input: String?): StringWrapper? {
+            return input?.let(::StringWrapper)
         }
     }
 }
