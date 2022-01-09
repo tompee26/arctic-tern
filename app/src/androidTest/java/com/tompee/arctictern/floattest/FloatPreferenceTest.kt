@@ -87,4 +87,15 @@ class FloatPreferenceTest {
         Assert.assertFalse(floatPreference.isTemperatureSet)
         Assert.assertTrue(floatPreference.temperature == 37.1f)
     }
+
+    @Test
+    fun `Test_migration`() {
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
+        Assert.assertFalse(floatPreference.isTemperatureSet)
+        floatPreference.initialize()
+        floatPreference.migrate()
+        Assert.assertTrue(floatPreference.temperature == 37.1f)
+        Assert.assertFalse(floatPreference.isTemperatureSet)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 1)
+    }
 }

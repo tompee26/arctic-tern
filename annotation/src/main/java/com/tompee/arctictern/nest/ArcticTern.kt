@@ -115,9 +115,14 @@ annotation class ArcticTern(
      * will be executed one by one in order of target version until the current version is achieved.
      * All previously executed migrations will not be executed again.
      *
-     * There are a couple of ways to achieve data migration. The most versatile approach is
-     * implementing the Migration interface from the nest package. See the documentation of that
+     * Order of execution among migrations is guaranteed so it is important to model migrations
+     * as independent with each other as possible.
+     *
+     * To achieve migration, implement the Migration interface from the nest package. See the documentation of that
      * interface for more information.
+     *
+     * @property version a non-negative version number where the migration will apply. Must also
+     *                   be non-zero
      */
     @Target(AnnotationTarget.CLASS)
     @Retention(AnnotationRetention.SOURCE)

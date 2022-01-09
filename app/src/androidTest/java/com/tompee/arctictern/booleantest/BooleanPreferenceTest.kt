@@ -88,4 +88,15 @@ class BooleanPreferenceTest {
         Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
         Assert.assertFalse(booleanPreference.isSuccessful)
     }
+
+    @Test
+    fun `Test_migration`() {
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
+        booleanPreference.initialize()
+        booleanPreference.migrate()
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        Assert.assertTrue(booleanPreference.isIsSuccessfulSet)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 2)
+    }
 }
