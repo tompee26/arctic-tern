@@ -19,9 +19,6 @@ import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.tompee.arctictern.compiler.checks.assert
 import com.tompee.arctictern.nest.ArcticTern
-import java.util.*
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
 
 internal class MigratableWriter(
     private val annotation: ArcticTern,
