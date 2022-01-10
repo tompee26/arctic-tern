@@ -54,7 +54,7 @@ class BooleanPreferenceTest {
     fun `Test_initialization`() {
         booleanPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
-        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
@@ -87,5 +87,16 @@ class BooleanPreferenceTest {
         booleanPreference.deleteIsSuccessful()
         Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
         Assert.assertFalse(booleanPreference.isSuccessful)
+    }
+
+    @Test
+    fun `Test_migration`() {
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
+        booleanPreference.initialize()
+        booleanPreference.migrate()
+        Assert.assertFalse(booleanPreference.isSuccessful)
+        Assert.assertTrue(booleanPreference.isIsSuccessfulSet)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 2)
     }
 }

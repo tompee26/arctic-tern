@@ -32,7 +32,7 @@ class StringPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        stringPreference = ArcticTernManager.getInstance(context).createStringPreference()
+        stringPreference = ArcticTernManager.getInstance(context).createArcticTernStringPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -53,7 +53,7 @@ class StringPreferenceTest {
     fun `Test_initialization`() {
         stringPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
-        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test

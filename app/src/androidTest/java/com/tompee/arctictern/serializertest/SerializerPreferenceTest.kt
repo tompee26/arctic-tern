@@ -32,7 +32,7 @@ class SerializerPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        serializerPreference = ArcticTernManager.getInstance(context).createSerializerPreference()
+        serializerPreference = ArcticTernManager.getInstance(context).createArcticTernSerializerPreference()
     }
 
     private fun SharedPreferences.clearAll() {
@@ -53,7 +53,7 @@ class SerializerPreferenceTest {
     fun `Test_initialization`() {
         serializerPreference.initialize()
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
-        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 0) == 1)
+        Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
