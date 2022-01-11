@@ -6,7 +6,7 @@ A local persistence framework backed by SharedPreferences with simple migration 
 ## Features
 - Generates implementation code for your preference files.
 - Generates a manager class that allows you to create the implementations.
-- TODO: Migration support
+- Migration support
 
 ## Getting started
 Note: `ksp` is needed to process annotations
@@ -145,6 +145,21 @@ data class StringWrapper(val value: String) {
 @ArcticTern.NullableObjectProperty(StringWrapper.Serializer::class)
 open var counter : IntWrapper = IntWrapper(0)
 ```
+
+## Migration
+
+Migration can be achieved by implementing the `Migration` interface and annotating it with `@Migration`. Migrations are incremental so you only need to specify the target version.
+
+```
+@ArcticTern.Migration(version = 2)
+class ResetMigration : Migration {
+    override fun onMigrate(version: Int, sharedPreferences: SharedPreferences) {
+        sharedPreferences.edit().putBoolean("isSuccessful", false).commit()
+    }
+}
+```
+
+Note that `onMigrate` gives you the instance of the `SharedPreferences` so use this with caution.
 
 ## Supported Types
 
