@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.generators.NullableObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.ObjectMemberGenerator
@@ -79,6 +80,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
             .applyAllPropertiesAndFunctions()
             .apply { migratableWriter.apply(this) }
             .addType(companionBuilder.build())
+            .addOriginatingKSFile(classDeclaration.containingFile!!)
             .build()
     }
 

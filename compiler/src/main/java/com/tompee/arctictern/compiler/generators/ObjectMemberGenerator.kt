@@ -17,6 +17,7 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.tompee.arctictern.compiler.ProcessingException
@@ -116,7 +117,11 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Mem
                 if (it.annotation.withDelete) buildDeleteFunction(internalPropName, it)
                 else null
             }
-        )
+        ).apply {
+            objectProperties.mapNotNull { it.serializer.containingFile }
+                .distinct()
+                .forEach { addOriginatingKSFile(it) }
+        }
     }
 
     /**
