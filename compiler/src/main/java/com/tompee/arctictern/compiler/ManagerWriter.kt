@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.tompee.arctictern.compiler.extensions.toNullable
@@ -49,6 +50,12 @@ internal class ManagerWriter(
             .applyCompanionObject()
             .applyGeneratorFunctions()
             .applyMigration()
+            .addOriginatingKSFile(classDeclaration.containingFile!!)
+            .apply {
+                fileSpecs.values.mapNotNull { it.containingFile }
+                    .distinct()
+                    .forEach { addOriginatingKSFile(it) }
+            }
             .build()
     }
 

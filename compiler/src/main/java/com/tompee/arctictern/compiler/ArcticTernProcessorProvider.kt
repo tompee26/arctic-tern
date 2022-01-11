@@ -62,7 +62,7 @@ class ArcticTernProcessorProvider : SymbolProcessorProvider {
         override fun finish() {
             super.finish()
             filesToWrite.forEach {
-                it.writeTo(codeGenerator, false)
+                it.writeTo(codeGenerator, true)
             }
         }
     }
