@@ -14,9 +14,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-opt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview"
-    kotlinOptions.freeCompilerArgs += "-opt-in=com.google.devtools.ksp.KspExperimental"
+tasks.compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-Xopt-in=com.google.devtools.ksp.KspExperimental",
+            "-Xopt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview",
+        )
+    }
 }
 
 tasks.dokkaJavadoc.configure {
