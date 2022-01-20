@@ -76,6 +76,30 @@ internal val flowField = Field(
 )
 
 /**
+ * State Flow field
+ */
+internal val stateFlowField = Field(
+    "stateFlow",
+    ClassName("kotlinx.coroutines.flow", "StateFlow")
+)
+
+/**
+ * Coroutine scope field
+ */
+internal val coroutineScopeField = Field(
+    "scope",
+    ClassName("kotlinx.coroutines", "CoroutineScope")
+)
+
+/**
+ * Sharing started field
+ */
+internal val sharingStartedField = Field(
+    "started",
+    ClassName("kotlinx.coroutines.flow", "SharingStarted")
+)
+
+/**
  * Migratable field
  */
 internal val migratableField = Field(

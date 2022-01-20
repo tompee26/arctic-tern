@@ -2,13 +2,17 @@ package com.tompee.arctictern.nest
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Arctic Tern Preference contract. This is backed by [SharedPreferences].
@@ -66,4 +70,11 @@ class Preference<T>(
         .onStart { emit(key) }
         .map { value }
         .conflate()
+
+    /**
+     * Returns a state flow with the [defaultValue] as the default value
+     */
+    fun asStateFlow(scope: CoroutineScope, started: SharingStarted): StateFlow<T> {
+        return observe().stateIn(scope, started, defaultValue)
+    }
 }
