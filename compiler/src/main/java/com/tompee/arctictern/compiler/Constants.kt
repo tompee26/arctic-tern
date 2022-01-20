@@ -84,6 +84,14 @@ internal val stateFlowField = Field(
 )
 
 /**
+ * Shared Flow field
+ */
+internal val sharedFlowField = Field(
+    "sharedFlow",
+    ClassName("kotlinx.coroutines.flow", "SharedFlow")
+)
+
+/**
  * Coroutine scope field
  */
 internal val coroutineScopeField = Field(
