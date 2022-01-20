@@ -24,6 +24,7 @@ import com.tompee.arctictern.compiler.extensions.toNullable
 import com.tompee.arctictern.compiler.extensions.typeName
 import com.tompee.arctictern.compiler.flowField
 import com.tompee.arctictern.compiler.preferenceField
+import com.tompee.arctictern.compiler.sharedFlowField
 import com.tompee.arctictern.compiler.sharedPreferencesField
 import com.tompee.arctictern.compiler.sharingStartedField
 import com.tompee.arctictern.compiler.stateFlowField
@@ -77,6 +78,9 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                     else null,
                     if (it.annotation.withFlow) {
                         buildStateFlowFunction(propName, it)
+                    } else null,
+                    if (it.annotation.withFlow) {
+                        buildSharedFlowFunction(propName, it)
                     } else null
                 )
             }.flatten()
@@ -247,6 +251,34 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
             .addParameter(sharingStartedField.toParameterSpec())
             .addStatement(
                 "return %L.asStateFlow(%L, %L)",
+                internalPropName,
+                coroutineScopeField.name,
+                sharingStartedField.name
+            )
+            .build()
+    }
+
+    /**
+     * Builds the shared flow function
+     */
+    private fun buildSharedFlowFunction(
+        internalPropName: String,
+        property: Property
+    ): FunSpec {
+        return FunSpec.builder("${property.prop.simpleName.asString()}AsSharedFlow")
+            .returns(
+                sharedFlowField.type.parameterizedBy(
+                    property.prop.let {
+                        it.typeName.toNullable(
+                            it.isNullable
+                        )
+                    }
+                )
+            )
+            .addParameter(coroutineScopeField.toParameterSpec())
+            .addParameter(sharingStartedField.toParameterSpec())
+            .addStatement(
+                "return %L.asSharedFlow(%L, %L)",
                 internalPropName,
                 coroutineScopeField.name,
                 sharingStartedField.name

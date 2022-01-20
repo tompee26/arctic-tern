@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -76,5 +78,12 @@ class Preference<T>(
      */
     fun asStateFlow(scope: CoroutineScope, started: SharingStarted): StateFlow<T> {
         return observe().stateIn(scope, started, defaultValue)
+    }
+
+    /**
+     * Returns a shared flow with the [defaultValue] as the default value
+     */
+    fun asSharedFlow(scope: CoroutineScope, started: SharingStarted): SharedFlow<T> {
+        return observe().shareIn(scope, started, 1)
     }
 }
