@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -85,5 +86,12 @@ class Preference<T>(
      */
     fun asSharedFlow(scope: CoroutineScope, started: SharingStarted): SharedFlow<T> {
         return observe().shareIn(scope, started, 1)
+    }
+
+    /**
+     * Returns a flow collector
+     */
+    fun asFlowCollector(): FlowCollector<T> {
+        return FlowCollector { value = it }
     }
 }

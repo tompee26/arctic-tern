@@ -29,6 +29,7 @@ import com.tompee.arctictern.compiler.extensions.getKey
 import com.tompee.arctictern.compiler.extensions.isNullable
 import com.tompee.arctictern.compiler.extensions.toNullable
 import com.tompee.arctictern.compiler.extensions.typeName
+import com.tompee.arctictern.compiler.flowCollectorField
 import com.tompee.arctictern.compiler.flowField
 import com.tompee.arctictern.compiler.preferenceField
 import com.tompee.arctictern.compiler.sharedFlowField
@@ -122,12 +123,15 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Mem
                     if (it.annotation.withDelete)
                         buildDeleteFunction(propName, it)
                     else null,
-                    if (it.annotation.withFlow) {
-                        buildStateFlowFunction(propName, it)
-                    } else null,
-                    if (it.annotation.withFlow) {
-                        buildSharedFlowFunction(propName, it)
-                    } else null
+                    *(
+                        if (it.annotation.withFlow) {
+                            arrayOf(
+                                buildStateFlowFunction(propName, it),
+                                buildSharedFlowFunction(propName, it),
+                                buildFlowCollectorFunction(propName, it)
+                            )
+                        } else emptyArray()
+                        )
                 )
             }.flatten()
         ).apply {
@@ -347,6 +351,27 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Mem
                 coroutineScopeField.name,
                 sharingStartedField.name
             )
+            .build()
+    }
+
+    /**
+     * Builds the flow collector function
+     */
+    private fun buildFlowCollectorFunction(
+        internalPropName: String,
+        property: ObjectProperty
+    ): FunSpec {
+        return FunSpec.builder("${property.prop.simpleName.asString()}AsFlowCollector")
+            .returns(
+                flowCollectorField.type.parameterizedBy(
+                    property.prop.let {
+                        it.typeName.toNullable(
+                            it.isNullable
+                        )
+                    }
+                )
+            )
+            .addStatement("return %L.asFlowCollector()", internalPropName)
             .build()
     }
 

@@ -92,6 +92,14 @@ internal val sharedFlowField = Field(
 )
 
 /**
+ * Flow Collector field
+ */
+internal val flowCollectorField = Field(
+    "collector",
+    ClassName("kotlinx.coroutines.flow", "FlowCollector")
+)
+
+/**
  * Coroutine scope field
  */
 internal val coroutineScopeField = Field(
