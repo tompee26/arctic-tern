@@ -13,6 +13,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.tompee.arctictern.compiler.checks.assert
+import com.tompee.arctictern.compiler.coroutineScopeField
 import com.tompee.arctictern.compiler.extensions.capitalize
 import com.tompee.arctictern.compiler.extensions.getKey
 import com.tompee.arctictern.compiler.extensions.isNullable
@@ -24,6 +25,8 @@ import com.tompee.arctictern.compiler.extensions.typeName
 import com.tompee.arctictern.compiler.flowField
 import com.tompee.arctictern.compiler.preferenceField
 import com.tompee.arctictern.compiler.sharedPreferencesField
+import com.tompee.arctictern.compiler.sharingStartedField
+import com.tompee.arctictern.compiler.stateFlowField
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : MemberGenerator {
@@ -66,10 +69,17 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                 )
             }.flatten()
         ).addFunctions(
-            properties.mapNotNull {
-                val internalPropName = "${it.prop.simpleName.asString()}Internal"
-                if (it.annotation.withDelete) buildDeleteFunction(internalPropName, it) else null
-            }
+            properties.map {
+                val propName = "${it.prop.simpleName.asString()}Internal"
+                listOfNotNull(
+                    if (it.annotation.withDelete)
+                        buildDeleteFunction(propName, it)
+                    else null,
+                    if (it.annotation.withFlow) {
+                        buildStateFlowFunction(propName, it)
+                    } else null
+                )
+            }.flatten()
         )
     }
 
@@ -212,6 +222,34 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) : M
                 FunSpec.getterBuilder()
                     .addStatement("return %L.observe()", internalPropName)
                     .build()
+            )
+            .build()
+    }
+
+    /**
+     * Builds the state flow function
+     */
+    private fun buildStateFlowFunction(
+        internalPropName: String,
+        property: Property
+    ): FunSpec {
+        return FunSpec.builder("${property.prop.simpleName.asString()}AsStateFlow")
+            .returns(
+                stateFlowField.type.parameterizedBy(
+                    property.prop.let {
+                        it.typeName.toNullable(
+                            it.isNullable
+                        )
+                    }
+                )
+            )
+            .addParameter(coroutineScopeField.toParameterSpec())
+            .addParameter(sharingStartedField.toParameterSpec())
+            .addStatement(
+                "return %L.asStateFlow(%L, %L)",
+                internalPropName,
+                coroutineScopeField.name,
+                sharingStartedField.name
             )
             .build()
     }

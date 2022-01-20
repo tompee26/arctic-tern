@@ -22,6 +22,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.tompee.arctictern.compiler.ProcessingException
 import com.tompee.arctictern.compiler.checks.assert
+import com.tompee.arctictern.compiler.coroutineScopeField
 import com.tompee.arctictern.compiler.extensions.capitalize
 import com.tompee.arctictern.compiler.extensions.getAnnotation
 import com.tompee.arctictern.compiler.extensions.getKey
@@ -31,6 +32,8 @@ import com.tompee.arctictern.compiler.extensions.typeName
 import com.tompee.arctictern.compiler.flowField
 import com.tompee.arctictern.compiler.preferenceField
 import com.tompee.arctictern.compiler.sharedPreferencesField
+import com.tompee.arctictern.compiler.sharingStartedField
+import com.tompee.arctictern.compiler.stateFlowField
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
@@ -117,11 +120,17 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
                 )
             }.flatten()
         ).addFunctions(
-            objectProperties.mapNotNull {
-                val internalPropName = "${it.prop.simpleName.asString()}Internal"
-                if (it.annotation.withDelete) buildDeleteFunction(internalPropName, it)
-                else null
-            }
+            objectProperties.map {
+                val propName = "${it.prop.simpleName.asString()}Internal"
+                listOfNotNull(
+                    if (it.annotation.withDelete)
+                        buildDeleteFunction(propName, it)
+                    else null,
+                    if (it.annotation.withFlow) {
+                        buildStateFlowFunction(propName, it)
+                    } else null
+                )
+            }.flatten()
         ).apply {
             objectProperties.mapNotNull { it.serializer.containingFile }
                 .distinct()
@@ -282,6 +291,34 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
                 FunSpec.getterBuilder()
                     .addStatement("return %L.observe()", internalPropName)
                     .build()
+            )
+            .build()
+    }
+
+    /**
+     * Builds the state flow function
+     */
+    private fun buildStateFlowFunction(
+        internalPropName: String,
+        property: ObjectProperty
+    ): FunSpec {
+        return FunSpec.builder("${property.prop.simpleName.asString()}AsStateFlow")
+            .returns(
+                stateFlowField.type.parameterizedBy(
+                    property.prop.let {
+                        it.typeName.toNullable(
+                            it.isNullable
+                        )
+                    }
+                )
+            )
+            .addParameter(coroutineScopeField.toParameterSpec())
+            .addParameter(sharingStartedField.toParameterSpec())
+            .addStatement(
+                "return %L.asStateFlow(%L, %L)",
+                internalPropName,
+                coroutineScopeField.name,
+                sharingStartedField.name
             )
             .build()
     }
