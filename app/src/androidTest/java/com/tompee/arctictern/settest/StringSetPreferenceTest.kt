@@ -52,16 +52,16 @@ class StringSetPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        stringSetPreference.initialize()
+        ArcticTernStringSetPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(stringSetPreference.isUpdated)
-        stringSetPreference.migrate()
-        Assert.assertTrue(stringSetPreference.isUpdated)
+        Assert.assertFalse(ArcticTernStringSetPreference.isUpdated(context))
+        ArcticTernStringSetPreference.migrate(context)
+        Assert.assertTrue(ArcticTernStringSetPreference.isUpdated(context))
     }
 
     @Test

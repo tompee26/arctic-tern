@@ -52,16 +52,16 @@ class BooleanPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        booleanPreference.initialize()
+        ArcticTernBooleanPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(booleanPreference.isUpdated)
-        booleanPreference.migrate()
-        Assert.assertTrue(booleanPreference.isUpdated)
+        Assert.assertFalse(ArcticTernBooleanPreference.isUpdated(context))
+        ArcticTernBooleanPreference.migrate(context)
+        Assert.assertTrue(ArcticTernBooleanPreference.isUpdated(context))
     }
 
     @Test
@@ -93,8 +93,8 @@ class BooleanPreferenceTest {
     fun `Test_migration`() {
         Assert.assertFalse(booleanPreference.isSuccessful)
         Assert.assertFalse(booleanPreference.isIsSuccessfulSet)
-        booleanPreference.initialize()
-        booleanPreference.migrate()
+        ArcticTernBooleanPreference.initialize(context)
+        ArcticTernBooleanPreference.migrate(context)
         Assert.assertFalse(booleanPreference.isSuccessful)
         Assert.assertTrue(booleanPreference.isIsSuccessfulSet)
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 2)

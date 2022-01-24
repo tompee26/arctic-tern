@@ -51,16 +51,16 @@ class FloatPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        floatPreference.initialize()
+        ArcticTernFloatPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(floatPreference.isUpdated)
-        floatPreference.migrate()
-        Assert.assertTrue(floatPreference.isUpdated)
+        Assert.assertFalse(ArcticTernFloatPreference.isUpdated(context))
+        ArcticTernFloatPreference.migrate(context)
+        Assert.assertTrue(ArcticTernFloatPreference.isUpdated(context))
     }
 
     @Test
@@ -92,8 +92,8 @@ class FloatPreferenceTest {
     fun `Test_migration`() {
         Assert.assertTrue(floatPreference.temperature == 37.1f)
         Assert.assertFalse(floatPreference.isTemperatureSet)
-        floatPreference.initialize()
-        floatPreference.migrate()
+        ArcticTernFloatPreference.initialize(context)
+        ArcticTernFloatPreference.migrate(context)
         Assert.assertTrue(floatPreference.temperature == 37.1f)
         Assert.assertFalse(floatPreference.isTemperatureSet)
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 1)

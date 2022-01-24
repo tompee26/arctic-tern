@@ -51,16 +51,16 @@ class IntPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        intPreference.initialize()
+        ArcticTernIntPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(intPreference.isUpdated)
-        intPreference.migrate()
-        Assert.assertTrue(intPreference.isUpdated)
+        Assert.assertFalse(ArcticTernIntPreference.isUpdated(context))
+        ArcticTernIntPreference.migrate(context)
+        Assert.assertTrue(ArcticTernIntPreference.isUpdated(context))
     }
 
     @Test

@@ -51,16 +51,16 @@ class SerializerPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        serializerPreference.initialize()
+        ArcticTernSerializerPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(serializerPreference.isUpdated)
-        serializerPreference.migrate()
-        Assert.assertTrue(serializerPreference.isUpdated)
+        Assert.assertFalse(ArcticTernSerializerPreference.isUpdated(context))
+        ArcticTernSerializerPreference.migrate(context)
+        Assert.assertTrue(ArcticTernSerializerPreference.isUpdated(context))
     }
 
     @Test

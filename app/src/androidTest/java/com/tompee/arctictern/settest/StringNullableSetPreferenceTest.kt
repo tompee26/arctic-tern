@@ -52,16 +52,16 @@ class StringNullableSetPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        stringSetPreference.initialize()
+        ArcticTernStringNullableSetPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(stringSetPreference.isUpdated)
-        stringSetPreference.migrate()
-        Assert.assertTrue(stringSetPreference.isUpdated)
+        Assert.assertFalse(ArcticTernStringNullableSetPreference.isUpdated(context))
+        ArcticTernStringNullableSetPreference.migrate(context)
+        Assert.assertTrue(ArcticTernStringNullableSetPreference.isUpdated(context))
     }
 
     @Test
