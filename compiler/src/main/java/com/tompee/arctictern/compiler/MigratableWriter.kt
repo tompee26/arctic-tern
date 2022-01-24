@@ -67,12 +67,10 @@ internal class MigratableWriter(
             )
         }.toList()
 
-    fun applyCompanion(companionBuilder: TypeSpec.Builder): TypeSpec.Builder {
+    fun apply(companionBuilder: TypeSpec.Builder): TypeSpec.Builder {
         return companionBuilder.applyConstants()
-    }
-
-    fun apply(builder: TypeSpec.Builder): TypeSpec.Builder {
-        return builder.applyInitialize()
+            .addSuperinterface(migratableField.type)
+            .applyInitialize()
             .applyIsUpdated()
             .applyMigrate()
             .applyMigrations()
@@ -95,10 +93,53 @@ internal class MigratableWriter(
         )
     }
 
+    /**
+     * Writes isUpdated implementation
+     *
+     * example:
+     * public override fun isUpdated(context: Context): Boolean {
+     *     val sharedPreferences = context.getSharedPreferences("pref_boolean", Context.MODE_PRIVATE)
+     *     if (!sharedPreferences.contains(KEY_VERSION)) return false
+     *     return sharedPreferences.getInt(KEY_VERSION, 0) == VERSION_CODE
+     * }
+     */
+    private fun TypeSpec.Builder.applyIsUpdated(): TypeSpec.Builder {
+        return addFunction(
+            FunSpec.builder("isUpdated")
+                .returns(BOOLEAN)
+                .addModifiers(KModifier.OVERRIDE)
+                .addParameter(contextField.toParameterSpec())
+                .writeSharedPreferencesInitialization()
+                .addStatement(
+                    "if (!%L.contains(%L)) return false",
+                    sharedPreferencesField.name,
+                    VERSION_KEY_NAME
+                )
+                .addStatement(
+                    "return %L.getInt(%L, 0) == %L",
+                    sharedPreferencesField.name, VERSION_KEY_NAME, VERSION_CONST_NAME
+                )
+                .build()
+        )
+    }
+
+    /**
+     * Writes initialize implementation
+     *
+     * example:
+     * public override fun initialize(context: Context): Unit {
+     *     val sharedPreferences = context.getSharedPreferences("pref_boolean", Context.MODE_PRIVATE)
+     *     if (!sharedPreferences.contains(KEY_VERSION)) {
+     *         sharedPreferences.edit().putInt(KEY_VERSION, 0).apply()
+     *     }
+     * }
+     */
     private fun TypeSpec.Builder.applyInitialize(): TypeSpec.Builder {
         return addFunction(
             FunSpec.builder("initialize")
                 .addModifiers(KModifier.OVERRIDE)
+                .addParameter(contextField.toParameterSpec())
+                .writeSharedPreferencesInitialization()
                 .beginControlFlow(
                     "if (!%L.contains(%L))",
                     sharedPreferencesField.name,
@@ -115,30 +156,28 @@ internal class MigratableWriter(
         )
     }
 
-    private fun TypeSpec.Builder.applyIsUpdated(): TypeSpec.Builder {
-        return addProperty(
-            PropertySpec.builder("isUpdated", BOOLEAN, KModifier.OVERRIDE)
-                .getter(
-                    FunSpec.getterBuilder()
-                        .addStatement(
-                            "if (!%L.contains(%L)) return false",
-                            sharedPreferencesField.name,
-                            VERSION_KEY_NAME
-                        )
-                        .addStatement(
-                            "return %L.getInt(%L, 0) == %L",
-                            sharedPreferencesField.name, VERSION_KEY_NAME, VERSION_CONST_NAME
-                        )
-                        .build()
-                )
-                .build()
-        )
-    }
-
+    /**
+     * Writes migrate implementation
+     *
+     * example:
+     * public override fun migrate(context: Context): Unit {
+     *     val sharedPreferences = context.getSharedPreferences("pref_boolean", Context.MODE_PRIVATE)
+     *     val currentVersion = sharedPreferences.getInt(KEY_VERSION, 0)
+     *     for (i in currentVersion until VERSION_CODE) {
+     *         val nextVersion = i + 1
+     *         migrations[nextVersion]?.forEach {
+     *             it.onMigrate(nextVersion, sharedPreferences)
+     *         }
+     *         sharedPreferences.edit().putInt(KEY_VERSION, nextVersion).apply()
+     *     }
+     * }
+     */
     private fun TypeSpec.Builder.applyMigrate(): TypeSpec.Builder {
         return addFunction(
             FunSpec.builder("migrate")
                 .addModifiers(KModifier.OVERRIDE)
+                .addParameter(contextField.toParameterSpec())
+                .writeSharedPreferencesInitialization()
                 .addStatement(
                     "val currentVersion = %L.getInt(%L, 0)",
                     sharedPreferencesField.name, VERSION_KEY_NAME
@@ -194,6 +233,15 @@ internal class MigratableWriter(
                 .endControlFlow()
                 .addStatement("set.add(migration)")
                 .build()
+        )
+    }
+
+    private fun FunSpec.Builder.writeSharedPreferencesInitialization(): FunSpec.Builder {
+        return addStatement(
+            "val %L = %L.getSharedPreferences(%S, Context.MODE_PRIVATE)",
+            sharedPreferencesField.name,
+            contextField.name,
+            annotation.preferenceFile
         )
     }
 }

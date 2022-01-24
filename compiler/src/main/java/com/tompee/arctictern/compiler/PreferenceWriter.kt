@@ -65,7 +65,7 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
      */
     private fun buildClass(): TypeSpec {
         val companionBuilder = TypeSpec.companionObjectBuilder()
-            .apply { migratableWriter.applyCompanion(this) }
+            .apply { migratableWriter.apply(this) }
         return TypeSpec.classBuilder(className)
             .addModifiers(listOfNotNull(classDeclaration.getVisibility().toKModifier()))
             .superclass(
@@ -74,11 +74,9 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                     classDeclaration.simpleName.asString()
                 )
             )
-            .addSuperinterface(migratableField.type)
             .applyConstructor()
             .applySharedPreferencesLazyProperty()
             .applyAllPropertiesAndFunctions()
-            .apply { migratableWriter.apply(this) }
             .addType(companionBuilder.build())
             .addOriginatingKSFile(classDeclaration.containingFile!!)
             .build()

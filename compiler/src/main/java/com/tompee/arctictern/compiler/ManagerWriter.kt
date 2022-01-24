@@ -148,10 +148,9 @@ internal class ManagerWriter(
                     FunSpec.getterBuilder()
                         .addStatement("val set = setOf<Migratable>(")
                         .apply {
-                            fileSpecs.map { (spec, _) ->
-                                "${spec.name}(${contextField.name}),"
+                            fileSpecs.forEach { (spec, _) ->
+                                addStatement("${spec.name},")
                             }
-                                .forEach { addStatement(it) }
                         }
                         .addStatement(")")
                         .addStatement("return set")
@@ -162,8 +161,8 @@ internal class ManagerWriter(
             .addFunction(
                 FunSpec.builder("migrate")
                     .beginControlFlow("migratableSet.forEach")
-                    .addStatement("it.initialize()")
-                    .addStatement("it.migrate()")
+                    .addStatement("it.initialize(%L)", contextField.name)
+                    .addStatement("it.migrate(%L)", contextField.name)
                     .endControlFlow()
                     .build()
             )

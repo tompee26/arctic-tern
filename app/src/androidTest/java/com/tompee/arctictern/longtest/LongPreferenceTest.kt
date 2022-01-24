@@ -51,16 +51,16 @@ class LongPreferenceTest {
 
     @Test
     fun `Test_initialization`() {
-        longPreference.initialize()
+        ArcticTernLongPreference.initialize(context)
         Assert.assertTrue(sharedPreference.contains(VERSION_KEY))
         Assert.assertTrue(sharedPreference.getInt(VERSION_KEY, 1) == 0)
     }
 
     @Test
     fun `Test_is_updated`() {
-        Assert.assertFalse(longPreference.isUpdated)
-        longPreference.migrate()
-        Assert.assertTrue(longPreference.isUpdated)
+        Assert.assertFalse(ArcticTernLongPreference.isUpdated(context))
+        ArcticTernLongPreference.migrate(context)
+        Assert.assertTrue(ArcticTernLongPreference.isUpdated(context))
     }
 
     @Test
