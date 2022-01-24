@@ -8,12 +8,9 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -22,30 +19,24 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.tompee.arctictern.compiler.ProcessingException
 import com.tompee.arctictern.compiler.checks.assert
-import com.tompee.arctictern.compiler.coroutineScopeField
-import com.tompee.arctictern.compiler.extensions.capitalize
 import com.tompee.arctictern.compiler.extensions.getAnnotation
 import com.tompee.arctictern.compiler.extensions.getKey
 import com.tompee.arctictern.compiler.extensions.isNullable
 import com.tompee.arctictern.compiler.extensions.toNullable
 import com.tompee.arctictern.compiler.extensions.typeName
-import com.tompee.arctictern.compiler.flowCollectorField
-import com.tompee.arctictern.compiler.flowField
 import com.tompee.arctictern.compiler.preferenceField
-import com.tompee.arctictern.compiler.sharedFlowField
 import com.tompee.arctictern.compiler.sharedPreferencesField
-import com.tompee.arctictern.compiler.sharingStartedField
-import com.tompee.arctictern.compiler.stateFlowField
 import com.tompee.arctictern.nest.ArcticTern
 
 internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaration) :
-    MemberGenerator {
+    BaseMemberGenerator() {
 
     /**
      * Property associated with [ArcticTern.NullableObjectProperty]
      */
     private data class ObjectProperty(
-        val prop: KSPropertyDeclaration,
+        val name: String,
+        val declaration: KSPropertyDeclaration,
         val annotation: ArcticTern.NullableObjectProperty,
         val serializer: KSClassDeclaration,
         val isObject: Boolean,
@@ -97,6 +88,7 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
             val annotation =
                 prop.getAnnotationsByType(ArcticTern.NullableObjectProperty::class).first()
             ObjectProperty(
+                "${prop.simpleName.asString()}Internal",
                 prop,
                 annotation,
                 declaration,
@@ -111,33 +103,29 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
     override fun applyAll(builder: TypeSpec.Builder): TypeSpec.Builder {
         return builder.addProperties(
             objectProperties.map {
-                val internalPropName = "${it.prop.simpleName.asString()}Internal"
                 listOfNotNull(
-                    buildLazyPreferenceProperty(internalPropName, it),
-                    buildPropertyOverride(internalPropName, it),
-                    buildIsSetProperty(internalPropName, it),
+                    buildLazyPreferenceProperty(it),
+                    buildPropertyOverride(it.name, it.declaration),
+                    buildIsSetProperty(it.name, it.declaration),
                     if (it.annotation.withFlow)
-                        buildFlowProperty(internalPropName, it)
+                        buildFlowProperty(it.name, it.declaration)
                     else null
                 )
             }.flatten()
         ).addFunctions(
             objectProperties.map {
-                val propName = "${it.prop.simpleName.asString()}Internal"
-                listOfNotNull(
-                    if (it.annotation.withDelete)
-                        buildDeleteFunction(propName, it)
-                    else null,
-                    *(
-                        if (it.annotation.withFlow) {
-                            arrayOf(
-                                buildStateFlowFunction(propName, it),
-                                buildSharedFlowFunction(propName, it),
-                                buildFlowCollectorFunction(propName, it)
-                            )
-                        } else emptyArray()
-                        )
-                )
+                val list = if (it.annotation.withFlow) {
+                    mutableListOf(
+                        buildStateFlowFunction(it.name, it.declaration),
+                        buildSharedFlowFunction(it.name, it.declaration),
+                        buildFlowCollectorFunction(it.name, it.declaration)
+
+                    )
+                } else mutableListOf()
+                if (it.annotation.withDelete) {
+                    list.add(buildDeleteFunction(it.name, it.declaration))
+                }
+                list
             }.flatten()
         ).apply {
             objectProperties.mapNotNull { it.serializer.containingFile }
@@ -148,29 +136,48 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
 
     /**
      * Builds the private lazy object ArcticTernPreference property
+     *
+     * example:
+     * private val boxedStringInternal: Preference<StringWrapper?> by lazy {
+     *     Preference(
+     *         key = "key_boxedString",
+     *         defaultValue = super.boxedString,
+     *         valueProvider = { preference, key, defaultValue ->
+     *             val serializer =
+     *                 com.tompee.arctictern.nullableserializertest.StringWrapper.NullSerializer()
+     *             val stringifiedDefaultValue = serializer.serialize(defaultValue)
+     *             val stringifiedValue = preference.getString(key, stringifiedDefaultValue)
+     *             serializer.deserialize(stringifiedValue)
+     *         },
+     *         valueSetter = { preference, key, value ->
+     *             val serializer =
+     *                 com.tompee.arctictern.nullableserializertest.StringWrapper.NullSerializer()
+     *             val stringifiedValue = serializer.serialize(value)
+     *             preference.edit().putString(key, stringifiedValue).apply()
+     *         },
+     *         sharedPreferences = sharedPreferences
+     *     )
+     * }
      */
-    private fun buildLazyPreferenceProperty(
-        internalPropName: String,
-        property: ObjectProperty
-    ): PropertySpec {
+    private fun buildLazyPreferenceProperty(property: ObjectProperty): PropertySpec {
         val preferenceName = "preference"
         val keyName = "key"
         val defaultValueName = "defaultValue"
         val valueName = "value"
         return PropertySpec.builder(
-            internalPropName,
+            property.name,
             preferenceField.type
-                .parameterizedBy(property.prop.let { it.typeName.toNullable(it.isNullable) }),
+                .parameterizedBy(property.declaration.let { it.typeName.toNullable(it.isNullable) }),
             KModifier.PRIVATE
         )
             .delegate(
                 CodeBlock.builder()
                     .beginControlFlow("lazy")
                     .addStatement("%L(", preferenceField.type.simpleName)
-                    .addStatement("key = %S,", property.annotation.getKey(property.prop))
+                    .addStatement("key = %S,", property.annotation.getKey(property.declaration))
                     .addStatement(
                         "defaultValue = super.%L,",
-                        property.prop.simpleName.asString()
+                        property.declaration.simpleName.asString()
                     )
                     .beginControlFlow("valueProvider = ")
                     .add(
@@ -232,163 +239,6 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
                     .endControlFlow()
                     .build()
             )
-            .build()
-    }
-
-    /**
-     * Builds the property override
-     */
-    private fun buildPropertyOverride(
-        internalPropName: String,
-        property: ObjectProperty
-    ): PropertySpec {
-        return PropertySpec.builder(
-            property.prop.simpleName.asString(),
-            property.prop.let { it.typeName.toNullable(it.isNullable) },
-            KModifier.OVERRIDE
-        )
-            .mutable(true)
-            .setter(
-                FunSpec.setterBuilder()
-                    .addParameter(
-                        ParameterSpec.builder("value", property.prop.typeName)
-                            .build()
-                    )
-                    .addStatement("%L.value = value", internalPropName)
-                    .build()
-            )
-            .getter(
-                FunSpec.getterBuilder()
-                    .addStatement("return %L.value", internalPropName)
-                    .build()
-            )
-            .build()
-    }
-
-    /**
-     * Builds the is set property
-     */
-    private fun buildIsSetProperty(
-        internalPropName: String,
-        property: ObjectProperty
-    ): PropertySpec {
-        return PropertySpec.builder(
-            "is${property.prop.simpleName.asString().capitalize()}Set",
-            BOOLEAN
-        )
-            .getter(
-                FunSpec.getterBuilder()
-                    .addStatement("return %L.isSet", internalPropName)
-                    .build()
-            )
-            .build()
-    }
-
-    /**
-     * Builds the flow property
-     */
-    private fun buildFlowProperty(
-        internalPropName: String,
-        property: ObjectProperty
-    ): PropertySpec {
-        return PropertySpec.builder(
-            "${property.prop.simpleName.asString()}Flow",
-            flowField.type.parameterizedBy(property.prop.let { it.typeName.toNullable(it.isNullable) })
-        )
-            .getter(
-                FunSpec.getterBuilder()
-                    .addStatement("return %L.observe()", internalPropName)
-                    .build()
-            )
-            .build()
-    }
-
-    /**
-     * Builds the state flow function
-     */
-    private fun buildStateFlowFunction(
-        internalPropName: String,
-        property: ObjectProperty
-    ): FunSpec {
-        return FunSpec.builder("${property.prop.simpleName.asString()}AsStateFlow")
-            .returns(
-                stateFlowField.type.parameterizedBy(
-                    property.prop.let {
-                        it.typeName.toNullable(
-                            it.isNullable
-                        )
-                    }
-                )
-            )
-            .addParameter(coroutineScopeField.toParameterSpec())
-            .addParameter(sharingStartedField.toParameterSpec())
-            .addStatement(
-                "return %L.asStateFlow(%L, %L)",
-                internalPropName,
-                coroutineScopeField.name,
-                sharingStartedField.name
-            )
-            .build()
-    }
-
-    /**
-     * Builds the shared flow function
-     */
-    private fun buildSharedFlowFunction(
-        internalPropName: String,
-        property: ObjectProperty
-    ): FunSpec {
-        return FunSpec.builder("${property.prop.simpleName.asString()}AsSharedFlow")
-            .returns(
-                sharedFlowField.type.parameterizedBy(
-                    property.prop.let {
-                        it.typeName.toNullable(
-                            it.isNullable
-                        )
-                    }
-                )
-            )
-            .addParameter(coroutineScopeField.toParameterSpec())
-            .addParameter(sharingStartedField.toParameterSpec())
-            .addStatement(
-                "return %L.asSharedFlow(%L, %L)",
-                internalPropName,
-                coroutineScopeField.name,
-                sharingStartedField.name
-            )
-            .build()
-    }
-
-    /**
-     * Builds the flow collector function
-     */
-    private fun buildFlowCollectorFunction(
-        internalPropName: String,
-        property: ObjectProperty
-    ): FunSpec {
-        return FunSpec.builder("${property.prop.simpleName.asString()}AsFlowCollector")
-            .returns(
-                flowCollectorField.type.parameterizedBy(
-                    property.prop.let {
-                        it.typeName.toNullable(
-                            it.isNullable
-                        )
-                    }
-                )
-            )
-            .addStatement("return %L.asFlowCollector()", internalPropName)
-            .build()
-    }
-
-    /**
-     * Builds the delete function
-     */
-    private fun buildDeleteFunction(
-        internalPropName: String,
-        property: ObjectProperty
-    ): FunSpec {
-        return FunSpec.builder("delete${property.prop.simpleName.asString().capitalize()}")
-            .addStatement("%L.delete()", internalPropName)
             .build()
     }
 }
