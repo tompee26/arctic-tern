@@ -9,7 +9,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
  * Converts a property declaration's type into a [Class]
  */
 internal val KSPropertyDeclaration.typeName: TypeName
-    get() = type.resolve().toTypeName()
+    get() = type.toTypeName()
 
 /**
  * Returns true if type is explicitly marked as nullable

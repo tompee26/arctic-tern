@@ -9,10 +9,12 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toKModifier
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.tompee.arctictern.compiler.generators.NullableObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.ObjectMemberGenerator
 import com.tompee.arctictern.compiler.generators.StandardMemberGenerator
@@ -36,6 +38,12 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
             else it
         )
     }
+
+    private val baseClassParameters = classDeclaration
+        .primaryConstructor?.parameters
+        ?.mapIndexed { index, param ->
+            (param.name?.asString() ?: "param$index") to param.type.toTypeName()
+        } ?: emptyList()
 
     private val migratableWriter = MigratableWriter(arcticTern, classDeclaration)
     private val standardMemberGenerator = StandardMemberGenerator(classDeclaration)
@@ -74,6 +82,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                     classDeclaration.simpleName.asString()
                 )
             )
+            .apply {
+                baseClassParameters.forEach { (name, _) ->
+                    addSuperclassConstructorParameter("%L", name)
+                }
+            }
             .applyConstructor()
             .applySharedPreferencesLazyProperty()
             .applyAllPropertiesAndFunctions()
@@ -89,6 +102,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
         return primaryConstructor(
             FunSpec.constructorBuilder()
                 .addParameter(contextField.toParameterSpec())
+                .apply {
+                    baseClassParameters.map { (name, type) ->
+                        addParameter(ParameterSpec.builder(name, type).build())
+                    }
+                }
                 .build()
         ).addProperty(
             contextField

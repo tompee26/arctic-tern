@@ -7,6 +7,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.SET
@@ -14,6 +15,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.addOriginatingKSFile
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toKModifier
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.tompee.arctictern.compiler.extensions.toNullable
 
 internal class ManagerWriter(
@@ -118,16 +120,38 @@ internal class ManagerWriter(
     private fun TypeSpec.Builder.applyGeneratorFunctions(): TypeSpec.Builder {
         return addFunctions(
             fileSpecs.map { (spec, clazz) ->
+                val parameters = clazz
+                    .primaryConstructor?.parameters
+                    ?.mapIndexed { index, param ->
+                        (param.name?.asString() ?: "param$index") to param.type.toTypeName()
+                    } ?: emptyList()
+
+                val returnBlock = CodeBlock.of(
+                    "return %L(%L)", spec.name,
+                    listOf(contextField.name, *parameters.map { it.first }.toTypedArray())
+                        .joinToString(separator = ", ") { it }
+                )
+
                 listOf(
                     FunSpec.builder("create${clazz.simpleName.asString()}")
                         .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
+                        .addParameters(
+                            parameters.map { (name, type) ->
+                                ParameterSpec.builder(name, type).build()
+                            }
+                        )
                         .returns(clazz.toClassName())
-                        .addStatement("return %L(context)", spec.name)
+                        .addCode(returnBlock)
                         .build(),
                     FunSpec.builder("create${spec.name}")
                         .addModifiers(listOfNotNull(clazz.getVisibility().toKModifier()))
+                        .addParameters(
+                            parameters.map { (name, type) ->
+                                ParameterSpec.builder(name, type).build()
+                            }
+                        )
                         .returns(ClassName(spec.packageName, spec.name))
-                        .addStatement("return %L(context)", spec.name)
+                        .addCode(returnBlock)
                         .build()
                 )
             }.flatten()

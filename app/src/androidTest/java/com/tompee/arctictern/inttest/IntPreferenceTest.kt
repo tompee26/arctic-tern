@@ -32,7 +32,7 @@ class IntPreferenceTest {
         context = ApplicationProvider.getApplicationContext()
         sharedPreference = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
         sharedPreference.clearAll()
-        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference()
+        intPreference = ArcticTernManager.getInstance(context).createArcticTernIntPreference(Provider(12))
     }
 
     private fun SharedPreferences.clearAll() {
