@@ -148,7 +148,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
      *             val serializer =
      *                 com.tompee.arctictern.serializertest.IntWrapper.NullableSerializer()
      *             val stringifiedValue = serializer.serialize(value)
-     *             preference.edit().putString(key, stringifiedValue).apply()
+     *             preference.edit().putString(key, stringifiedValue).commit()
      *         },
      *         sharedPreferences = sharedPreferences
      *     )
@@ -218,7 +218,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                                 valueName
                             )
                             .addStatement(
-                                "$preferenceName.edit().putString(%L, stringifiedValue).apply()",
+                                "$preferenceName.edit().putString(%L, stringifiedValue).commit()",
                                 keyName
                             )
                             .build()

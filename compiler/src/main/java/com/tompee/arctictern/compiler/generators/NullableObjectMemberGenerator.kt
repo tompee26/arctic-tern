@@ -153,7 +153,7 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
      *             val serializer =
      *                 com.tompee.arctictern.nullableserializertest.StringWrapper.NullSerializer()
      *             val stringifiedValue = serializer.serialize(value)
-     *             preference.edit().putString(key, stringifiedValue).apply()
+     *             preference.edit().putString(key, stringifiedValue).commit()
      *         },
      *         sharedPreferences = sharedPreferences
      *     )
@@ -223,7 +223,7 @@ internal class NullableObjectMemberGenerator(classDeclaration: KSClassDeclaratio
                                 valueName
                             )
                             .addStatement(
-                                "$preferenceName.edit().putString(%L, stringifiedValue).apply()",
+                                "$preferenceName.edit().putString(%L, stringifiedValue).commit()",
                                 keyName
                             )
                             .build()

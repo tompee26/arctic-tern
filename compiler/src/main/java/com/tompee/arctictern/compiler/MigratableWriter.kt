@@ -130,7 +130,7 @@ internal class MigratableWriter(
      * public override fun initialize(context: Context): Unit {
      *     val sharedPreferences = context.getSharedPreferences("pref_boolean", Context.MODE_PRIVATE)
      *     if (!sharedPreferences.contains(KEY_VERSION)) {
-     *         sharedPreferences.edit().putInt(KEY_VERSION, 0).apply()
+     *         sharedPreferences.edit().putInt(KEY_VERSION, 0).commit()
      *     }
      * }
      */
@@ -146,7 +146,7 @@ internal class MigratableWriter(
                     VERSION_KEY_NAME
                 )
                 .addStatement(
-                    "%L.edit().putInt(%L, %L).apply()",
+                    "%L.edit().putInt(%L, %L).commit()",
                     sharedPreferencesField.name,
                     VERSION_KEY_NAME,
                     0
@@ -168,7 +168,7 @@ internal class MigratableWriter(
      *         migrations[nextVersion]?.forEach {
      *             it.onMigrate(nextVersion, sharedPreferences)
      *         }
-     *         sharedPreferences.edit().putInt(KEY_VERSION, nextVersion).apply()
+     *         sharedPreferences.edit().putInt(KEY_VERSION, nextVersion).commit()
      *     }
      * }
      */
@@ -188,7 +188,7 @@ internal class MigratableWriter(
                 .addStatement("it.onMigrate(nextVersion, %L)", sharedPreferencesField.name)
                 .endControlFlow()
                 .addStatement(
-                    "%L.edit().putInt(%L, nextVersion).apply()",
+                    "%L.edit().putInt(%L, nextVersion).commit()",
                     sharedPreferencesField.name,
                     VERSION_KEY_NAME
                 )
