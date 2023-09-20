@@ -24,22 +24,22 @@ internal val supportedTypes = setOf(
     DataType(
         SET.parameterizedBy(STRING).copy(true),
         "getStringSet(%L, %L)",
-        "putStringSet(%L, %L)"
+        "putStringSet(%L, %L)",
     ),
     DataType(
         SET.parameterizedBy(STRING),
         "getStringSet(%L, %L).orEmpty()",
-        "putStringSet(%L, %L)"
+        "putStringSet(%L, %L)",
     ),
     DataType(
         SET.parameterizedBy(STRING.copy(true)).copy(true),
         "getStringSet(%L, %L)",
-        "putStringSet(%L, %L)"
+        "putStringSet(%L, %L)",
     ),
     DataType(
         SET.parameterizedBy(STRING.copy(true)),
         "getStringSet(%L, %L).orEmpty()",
-        "putStringSet(%L, %L)"
+        "putStringSet(%L, %L)",
     ),
 )
 
@@ -48,7 +48,7 @@ internal val supportedTypes = setOf(
  */
 internal val contextField = Field(
     "context",
-    ClassName("android.content", "Context")
+    ClassName("android.content", "Context"),
 )
 
 /**
@@ -56,7 +56,7 @@ internal val contextField = Field(
  */
 internal val sharedPreferencesField = Field(
     "sharedPreferences",
-    ClassName("android.content", "SharedPreferences")
+    ClassName("android.content", "SharedPreferences"),
 )
 
 /**
@@ -64,7 +64,7 @@ internal val sharedPreferencesField = Field(
  */
 internal val preferenceField = Field(
     "preference",
-    ClassName("com.tompee.arctictern.nest", "Preference")
+    ClassName("com.tompee.arctictern.nest", "Preference"),
 )
 
 /**
@@ -72,7 +72,7 @@ internal val preferenceField = Field(
  */
 internal val flowField = Field(
     "flow",
-    ClassName("kotlinx.coroutines.flow", "Flow")
+    ClassName("kotlinx.coroutines.flow", "Flow"),
 )
 
 /**
@@ -80,7 +80,7 @@ internal val flowField = Field(
  */
 internal val stateFlowField = Field(
     "stateFlow",
-    ClassName("kotlinx.coroutines.flow", "StateFlow")
+    ClassName("kotlinx.coroutines.flow", "StateFlow"),
 )
 
 /**
@@ -88,7 +88,7 @@ internal val stateFlowField = Field(
  */
 internal val sharedFlowField = Field(
     "sharedFlow",
-    ClassName("kotlinx.coroutines.flow", "SharedFlow")
+    ClassName("kotlinx.coroutines.flow", "SharedFlow"),
 )
 
 /**
@@ -96,7 +96,7 @@ internal val sharedFlowField = Field(
  */
 internal val flowCollectorField = Field(
     "collector",
-    ClassName("kotlinx.coroutines.flow", "FlowCollector")
+    ClassName("kotlinx.coroutines.flow", "FlowCollector"),
 )
 
 /**
@@ -104,7 +104,7 @@ internal val flowCollectorField = Field(
  */
 internal val coroutineScopeField = Field(
     "scope",
-    ClassName("kotlinx.coroutines", "CoroutineScope")
+    ClassName("kotlinx.coroutines", "CoroutineScope"),
 )
 
 /**
@@ -112,7 +112,7 @@ internal val coroutineScopeField = Field(
  */
 internal val sharingStartedField = Field(
     "started",
-    ClassName("kotlinx.coroutines.flow", "SharingStarted")
+    ClassName("kotlinx.coroutines.flow", "SharingStarted"),
 )
 
 /**
@@ -120,5 +120,5 @@ internal val sharingStartedField = Field(
  */
 internal val migratableField = Field(
     "migratable",
-    ClassName("com.tompee.arctictern.nest", "Migratable")
+    ClassName("com.tompee.arctictern.nest", "Migratable"),
 )

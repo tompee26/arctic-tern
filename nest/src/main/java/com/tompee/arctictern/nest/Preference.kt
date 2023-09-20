@@ -35,7 +35,7 @@ class Preference<T>(
     val defaultValue: T,
     private val valueProvider: (SharedPreferences, String, T) -> T,
     private val valueSetter: (SharedPreferences, String, T) -> Unit,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
 ) {
 
     /**

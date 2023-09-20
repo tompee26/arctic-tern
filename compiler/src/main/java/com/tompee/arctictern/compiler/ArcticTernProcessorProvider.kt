@@ -48,7 +48,7 @@ class ArcticTernProcessorProvider : SymbolProcessorProvider {
                 if (appSymbol != null) {
                     filesToWrite += ManagerWriter(
                         appSymbol,
-                        preferences.zip(annotatedTypes).toMap()
+                        preferences.zip(annotatedTypes).toMap(),
                     ).createManager()
                 }
             } catch (e: ProcessingException) {

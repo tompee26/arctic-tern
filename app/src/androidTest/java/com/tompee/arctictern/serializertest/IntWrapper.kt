@@ -20,8 +20,11 @@ data class IntWrapper(val value: Int) {
         }
 
         override fun deserialize(input: String): IntWrapper? {
-            return if (input.isEmpty()) null
-            else Integer.parseInt(input).let(::IntWrapper)
+            return if (input.isEmpty()) {
+                null
+            } else {
+                Integer.parseInt(input).let(::IntWrapper)
+            }
         }
     }
 }

@@ -11,7 +11,9 @@ import com.tompee.arctictern.nest.DEFAULT_KEY
 internal fun ArcticTern.Property.getKey(property: KSPropertyDeclaration): String {
     return if (key == DEFAULT_KEY) {
         "key_${property.simpleName.asString()}"
-    } else key
+    } else {
+        key
+    }
 }
 
 /**
@@ -21,7 +23,9 @@ internal fun ArcticTern.Property.getKey(property: KSPropertyDeclaration): String
 internal fun ArcticTern.ObjectProperty.getKey(property: KSPropertyDeclaration): String {
     return if (key == DEFAULT_KEY) {
         "key_${property.simpleName.asString()}"
-    } else key
+    } else {
+        key
+    }
 }
 
 /**
@@ -31,5 +35,7 @@ internal fun ArcticTern.ObjectProperty.getKey(property: KSPropertyDeclaration): 
 internal fun ArcticTern.NullableObjectProperty.getKey(property: KSPropertyDeclaration): String {
     return if (key == DEFAULT_KEY) {
         "key_${property.simpleName.asString()}"
-    } else key
+    } else {
+        key
+    }
 }

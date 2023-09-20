@@ -17,14 +17,14 @@ internal class Field(val name: String, val type: ClassName) {
 
     fun toPropertySpec(
         withInitializer: Boolean = false,
-        vararg modifiers: KModifier = emptyArray()
+        vararg modifiers: KModifier = emptyArray(),
     ): PropertySpec {
         return toPropertySpecBuilder(withInitializer, *modifiers).build()
     }
 
     fun toPropertySpecBuilder(
         withInitializer: Boolean = false,
-        vararg modifiers: KModifier = emptyArray()
+        vararg modifiers: KModifier = emptyArray(),
     ): PropertySpec.Builder {
         return PropertySpec.builder(name, type, *modifiers)
             .apply { if (withInitializer) initializer(name) }

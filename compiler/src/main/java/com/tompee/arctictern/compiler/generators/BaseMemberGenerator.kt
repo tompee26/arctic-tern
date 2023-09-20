@@ -38,27 +38,27 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildPropertyOverride(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): PropertySpec {
         return PropertySpec.builder(
             propertyDeclaration.simpleName.asString(),
             propertyDeclaration.let { it.typeName.toNullable(it.isNullable) },
-            KModifier.OVERRIDE
+            KModifier.OVERRIDE,
         )
             .mutable(true)
             .setter(
                 FunSpec.setterBuilder()
                     .addParameter(
                         ParameterSpec.builder("value", propertyDeclaration.typeName)
-                            .build()
+                            .build(),
                     )
                     .addStatement("%L.value = value", propertyName)
-                    .build()
+                    .build(),
             )
             .getter(
                 FunSpec.getterBuilder()
                     .addStatement("return %L.value", propertyName)
-                    .build()
+                    .build(),
             )
             .build()
     }
@@ -75,16 +75,16 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildIsSetProperty(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): PropertySpec {
         return PropertySpec.builder(
             "is${propertyDeclaration.simpleName.asString().capitalize()}Set",
-            BOOLEAN
+            BOOLEAN,
         )
             .getter(
                 FunSpec.getterBuilder()
                     .addStatement("return %L.isSet", propertyName)
-                    .build()
+                    .build(),
             )
             .build()
     }
@@ -101,17 +101,17 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildFlowProperty(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): PropertySpec {
         return PropertySpec.builder(
             "${propertyDeclaration.simpleName.asString()}Flow",
             flowField.type
-                .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) })
+                .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) }),
         )
             .getter(
                 FunSpec.getterBuilder()
                     .addStatement("return %L.observe()", propertyName)
-                    .build()
+                    .build(),
             )
             .build()
     }
@@ -128,12 +128,12 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildStateFlowFunction(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): FunSpec {
         return FunSpec.builder("${propertyDeclaration.simpleName.asString()}AsStateFlow")
             .returns(
                 stateFlowField.type
-                    .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) })
+                    .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) }),
             )
             .addParameter(coroutineScopeField.toParameterSpec())
             .addParameter(sharingStartedField.toParameterSpec())
@@ -141,7 +141,7 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
                 "return %L.asStateFlow(%L, %L)",
                 propertyName,
                 coroutineScopeField.name,
-                sharingStartedField.name
+                sharingStartedField.name,
             )
             .build()
     }
@@ -158,12 +158,12 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildSharedFlowFunction(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): FunSpec {
         return FunSpec.builder("${propertyDeclaration.simpleName.asString()}AsSharedFlow")
             .returns(
                 sharedFlowField.type
-                    .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) })
+                    .parameterizedBy(propertyDeclaration.let { it.typeName.toNullable(it.isNullable) }),
             )
             .addParameter(coroutineScopeField.toParameterSpec())
             .addParameter(sharingStartedField.toParameterSpec())
@@ -171,7 +171,7 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
                 "return %L.asSharedFlow(%L, %L)",
                 propertyName,
                 coroutineScopeField.name,
-                sharingStartedField.name
+                sharingStartedField.name,
             )
             .build()
     }
@@ -187,17 +187,17 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildFlowCollectorFunction(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): FunSpec {
         return FunSpec.builder("${propertyDeclaration.simpleName.asString()}AsFlowCollector")
             .returns(
                 flowCollectorField.type.parameterizedBy(
                     propertyDeclaration.let {
                         it.typeName.toNullable(
-                            it.isNullable
+                            it.isNullable,
                         )
-                    }
-                )
+                    },
+                ),
             )
             .addStatement("return %L.asFlowCollector()", propertyName)
             .build()
@@ -216,7 +216,7 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
      */
     protected fun buildDeleteFunction(
         propertyName: String,
-        propertyDeclaration: KSPropertyDeclaration
+        propertyDeclaration: KSPropertyDeclaration,
     ): FunSpec {
         return FunSpec.builder("delete${propertyDeclaration.simpleName.asString().capitalize()}")
             .addStatement("%L.delete()", propertyName)
