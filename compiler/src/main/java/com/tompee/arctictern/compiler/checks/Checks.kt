@@ -9,7 +9,7 @@ import com.tompee.arctictern.compiler.ProcessingException
  */
 internal fun KSPropertyDeclaration.assert(
     message: String,
-    block: KSPropertyDeclaration.() -> Boolean
+    block: KSPropertyDeclaration.() -> Boolean,
 ) {
     if (!block(this)) {
         throw ProcessingException(message, this)
@@ -21,7 +21,7 @@ internal fun KSPropertyDeclaration.assert(
  */
 internal fun KSClassDeclaration.assert(
     message: String,
-    block: KSClassDeclaration.() -> Boolean
+    block: KSClassDeclaration.() -> Boolean,
 ) {
     if (!block(this)) {
         throw ProcessingException(message, this)

@@ -30,7 +30,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
     private data class Property(
         val name: String,
         val declaration: KSPropertyDeclaration,
-        val annotation: ArcticTern.Property
+        val annotation: ArcticTern.Property,
     )
 
     /**
@@ -47,7 +47,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
             Property(
                 "${it.simpleName.asString()}Internal",
                 it,
-                it.getAnnotationsByType(ArcticTern.Property::class).first()
+                it.getAnnotationsByType(ArcticTern.Property::class).first(),
             )
         }
         .toList()
@@ -62,26 +62,30 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
                     buildLazyPreferenceProperty(it),
                     buildPropertyOverride(it.name, it.declaration),
                     buildIsSetProperty(it.name, it.declaration),
-                    if (it.annotation.withFlow)
+                    if (it.annotation.withFlow) {
                         buildFlowProperty(it.name, it.declaration)
-                    else null
+                    } else {
+                        null
+                    },
                 )
-            }.flatten()
+            }.flatten(),
         ).addFunctions(
             properties.map {
                 val list = if (it.annotation.withFlow) {
                     mutableListOf(
                         buildStateFlowFunction(it.name, it.declaration),
                         buildSharedFlowFunction(it.name, it.declaration),
-                        buildFlowCollectorFunction(it.name, it.declaration)
+                        buildFlowCollectorFunction(it.name, it.declaration),
 
                     )
-                } else mutableListOf()
+                } else {
+                    mutableListOf()
+                }
                 if (it.annotation.withDelete) {
                     list.add(buildDeleteFunction(it.name, it.declaration))
                 }
                 list
-            }.flatten()
+            }.flatten(),
         )
     }
 
@@ -112,7 +116,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
             property.name,
             preferenceField.type
                 .parameterizedBy(property.declaration.let { it.typeName.toNullable(it.isNullable) }),
-            KModifier.PRIVATE
+            KModifier.PRIVATE,
         )
             .delegate(
                 CodeBlock.builder()
@@ -121,7 +125,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
                     .addStatement("key = %S,", property.annotation.getKey(property.declaration))
                     .addStatement(
                         "defaultValue = super.%L,",
-                        property.declaration.simpleName.asString()
+                        property.declaration.simpleName.asString(),
                     )
                     .beginControlFlow("valueProvider = ")
                     .add(
@@ -130,14 +134,14 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
                                 "%L, %L, %L ->",
                                 preferenceName,
                                 keyName,
-                                defaultValueName
+                                defaultValueName,
                             )
                             .addStatement(
                                 "$preferenceName.${property.declaration.typeName.preferenceGetter}",
                                 keyName,
                                 defaultValueName,
                             )
-                            .build()
+                            .build(),
                     )
                     .endControlFlow()
                     .addStatement(",")
@@ -148,25 +152,25 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
                                 "%L, %L, %L ->",
                                 preferenceName,
                                 keyName,
-                                valueName
+                                valueName,
                             )
                             .addStatement(
                                 "$preferenceName.edit().${property.declaration.typeName.preferenceSetter}.commit()",
                                 keyName,
-                                valueName
+                                valueName,
                             )
-                            .build()
+                            .build(),
                     )
                     .endControlFlow()
                     .addStatement(",")
                     .addStatement(
                         "%L = %L",
                         sharedPreferencesField.name,
-                        sharedPreferencesField.name
+                        sharedPreferencesField.name,
                     )
                     .addStatement(")")
                     .endControlFlow()
-                    .build()
+                    .build(),
             )
             .build()
     }

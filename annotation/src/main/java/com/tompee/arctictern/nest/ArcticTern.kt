@@ -32,7 +32,7 @@ const val DEFAULT_NAME = "arctic_tern_name_default"
 annotation class ArcticTern(
     val name: String = DEFAULT_NAME,
     val preferenceFile: String,
-    val version: Int
+    val version: Int,
 ) {
 
     /**
@@ -55,7 +55,7 @@ annotation class ArcticTern(
     annotation class Property(
         val key: String = DEFAULT_KEY,
         val withFlow: Boolean = true,
-        val withDelete: Boolean = true
+        val withDelete: Boolean = true,
     )
 
     /**
@@ -81,7 +81,7 @@ annotation class ArcticTern(
         val serializer: KClass<out Serializer<*>>,
         val key: String = DEFAULT_KEY,
         val withFlow: Boolean = true,
-        val withDelete: Boolean = true
+        val withDelete: Boolean = true,
     )
 
     /**
@@ -107,7 +107,7 @@ annotation class ArcticTern(
         val serializer: KClass<out NullableSerializer<*>>,
         val key: String = DEFAULT_KEY,
         val withFlow: Boolean = true,
-        val withDelete: Boolean = true
+        val withDelete: Boolean = true,
     )
 
     /**

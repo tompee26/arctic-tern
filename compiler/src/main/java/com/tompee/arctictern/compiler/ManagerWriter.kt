@@ -20,7 +20,7 @@ import com.tompee.arctictern.compiler.extensions.toNullable
 
 internal class ManagerWriter(
     private val classDeclaration: KSClassDeclaration,
-    private val fileSpecs: Map<FileSpec, KSClassDeclaration>
+    private val fileSpecs: Map<FileSpec, KSClassDeclaration>,
 ) {
 
     companion object {
@@ -69,11 +69,11 @@ internal class ManagerWriter(
             FunSpec.constructorBuilder()
                 .addModifiers(KModifier.PRIVATE)
                 .addParameter(contextField.toParameterSpec())
-                .build()
+                .build(),
         ).addProperty(
             contextField
                 .toPropertySpecBuilder(true, KModifier.PRIVATE)
-                .build()
+                .build(),
         )
     }
 
@@ -88,7 +88,7 @@ internal class ManagerWriter(
                         .mutable(true)
                         .addModifiers(KModifier.PRIVATE)
                         .initializer("null")
-                        .build()
+                        .build(),
                 )
                 .addFunction(
                     FunSpec.builder("getInstance")
@@ -106,11 +106,11 @@ internal class ManagerWriter(
                                 .addStatement("newInstance")
                                 .endControlFlow()
                                 .endControlFlow()
-                                .build()
+                                .build(),
                         )
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
     }
 
@@ -127,9 +127,10 @@ internal class ManagerWriter(
                     } ?: emptyList()
 
                 val returnBlock = CodeBlock.of(
-                    "return %L(%L)", spec.name,
+                    "return %L(%L)",
+                    spec.name,
                     listOf(contextField.name, *parameters.map { it.first }.toTypedArray())
-                        .joinToString(separator = ", ") { it }
+                        .joinToString(separator = ", ") { it },
                 )
 
                 listOf(
@@ -138,7 +139,7 @@ internal class ManagerWriter(
                         .addParameters(
                             parameters.map { (name, type) ->
                                 ParameterSpec.builder(name, type).build()
-                            }
+                            },
                         )
                         .returns(clazz.toClassName())
                         .addCode(returnBlock)
@@ -148,13 +149,13 @@ internal class ManagerWriter(
                         .addParameters(
                             parameters.map { (name, type) ->
                                 ParameterSpec.builder(name, type).build()
-                            }
+                            },
                         )
                         .returns(ClassName(spec.packageName, spec.name))
                         .addCode(returnBlock)
-                        .build()
+                        .build(),
                 )
-            }.flatten()
+            }.flatten(),
         )
     }
 
@@ -166,7 +167,7 @@ internal class ManagerWriter(
             PropertySpec.builder(
                 "migratableSet",
                 SET.parameterizedBy(migratableField.type),
-                KModifier.PRIVATE
+                KModifier.PRIVATE,
             )
                 .getter(
                     FunSpec.getterBuilder()
@@ -178,9 +179,9 @@ internal class ManagerWriter(
                         }
                         .addStatement(")")
                         .addStatement("return set")
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
             .addFunction(
                 FunSpec.builder("migrate")
@@ -188,7 +189,7 @@ internal class ManagerWriter(
                     .addStatement("it.initialize(%L)", contextField.name)
                     .addStatement("it.migrate(%L)", contextField.name)
                     .endControlFlow()
-                    .build()
+                    .build(),
             )
     }
 }

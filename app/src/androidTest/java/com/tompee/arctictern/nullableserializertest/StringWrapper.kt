@@ -7,8 +7,11 @@ data class StringWrapper(val value: String) {
     class Serializer : NullableSerializer<StringWrapper> {
 
         override fun serialize(input: StringWrapper): String? {
-            return if (input.value.isEmpty()) null
-            else input.value
+            return if (input.value.isEmpty()) {
+                null
+            } else {
+                input.value
+            }
         }
 
         override fun deserialize(input: String?): StringWrapper {

@@ -34,8 +34,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
     private val className = arcticTern.name.let {
         ClassName(
             classDeclaration.packageName.asString(),
-            if (it == DEFAULT_NAME) "ArcticTern${classDeclaration.simpleName.asString()}"
-            else it
+            if (it == DEFAULT_NAME) {
+                "ArcticTern${classDeclaration.simpleName.asString()}"
+            } else {
+                it
+            },
         )
     }
 
@@ -79,8 +82,8 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
             .superclass(
                 ClassName(
                     classDeclaration.packageName.asString(),
-                    classDeclaration.simpleName.asString()
-                )
+                    classDeclaration.simpleName.asString(),
+                ),
             )
             .apply {
                 baseClassParameters.forEach { (name, _) ->
@@ -107,11 +110,11 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
                         addParameter(ParameterSpec.builder(name, type).build())
                     }
                 }
-                .build()
+                .build(),
         ).addProperty(
             contextField
                 .toPropertySpecBuilder(true, KModifier.PRIVATE)
-                .build()
+                .build(),
         )
     }
 
@@ -123,19 +126,19 @@ internal class PreferenceWriter(private val classDeclaration: KSClassDeclaration
             PropertySpec.builder(
                 sharedPreferencesField.name,
                 sharedPreferencesField.type,
-                KModifier.PRIVATE
+                KModifier.PRIVATE,
             )
                 .delegate(
                     CodeBlock.builder()
                         .beginControlFlow("lazy")
                         .addStatement(
                             "context.getSharedPreferences(%S, Context.MODE_PRIVATE)",
-                            arcticTern.preferenceFile
+                            arcticTern.preferenceFile,
                         )
                         .endControlFlow()
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
     }
 

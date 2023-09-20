@@ -74,7 +74,8 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
 
             when (serializer.toTypeName()) {
                 serializerClassName.parameterizedBy(prop.typeName),
-                serializerClassName.parameterizedBy(prop.typeName.copy(true)) -> {
+                serializerClassName.parameterizedBy(prop.typeName.copy(true)),
+                -> {
                 }
                 else -> {
                     throw ProcessingException("Serializer type is not compatible", declaration)
@@ -87,7 +88,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                 prop,
                 annotation,
                 declaration,
-                declaration.classKind == ClassKind.OBJECT
+                declaration.classKind == ClassKind.OBJECT,
             )
         }
         .toList()
@@ -102,26 +103,30 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                     buildLazyPreferenceProperty(it),
                     buildPropertyOverride(it.name, it.declaration),
                     buildIsSetProperty(it.name, it.declaration),
-                    if (it.annotation.withFlow)
+                    if (it.annotation.withFlow) {
                         buildFlowProperty(it.name, it.declaration)
-                    else null
+                    } else {
+                        null
+                    },
                 )
-            }.flatten()
+            }.flatten(),
         ).addFunctions(
             objectProperties.map {
                 val list = if (it.annotation.withFlow) {
                     mutableListOf(
                         buildStateFlowFunction(it.name, it.declaration),
                         buildSharedFlowFunction(it.name, it.declaration),
-                        buildFlowCollectorFunction(it.name, it.declaration)
+                        buildFlowCollectorFunction(it.name, it.declaration),
 
                     )
-                } else mutableListOf()
+                } else {
+                    mutableListOf()
+                }
                 if (it.annotation.withDelete) {
                     list.add(buildDeleteFunction(it.name, it.declaration))
                 }
                 list
-            }.flatten()
+            }.flatten(),
         ).apply {
             objectProperties.mapNotNull { it.serializer.containingFile }
                 .distinct()
@@ -163,7 +168,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
             property.name,
             preferenceField.type
                 .parameterizedBy(property.declaration.let { it.typeName.toNullable(it.isNullable) }),
-            KModifier.PRIVATE
+            KModifier.PRIVATE,
         )
             .delegate(
                 CodeBlock.builder()
@@ -172,7 +177,7 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                     .addStatement("key = %S,", property.annotation.getKey(property.declaration))
                     .addStatement(
                         "defaultValue = super.%L,",
-                        property.declaration.simpleName.asString()
+                        property.declaration.simpleName.asString(),
                     )
                     .beginControlFlow("valueProvider = ")
                     .add(
@@ -181,22 +186,22 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                                 "%L, %L, %L ->",
                                 preferenceName,
                                 keyName,
-                                defaultValueName
+                                defaultValueName,
                             )
                             .addStatement(
                                 if (property.isObject) "val serializer = %L" else "val serializer = %L()",
-                                property.serializer.qualifiedName?.asString().orEmpty()
+                                property.serializer.qualifiedName?.asString().orEmpty(),
                             )
                             .addStatement(
                                 "val stringifiedDefaultValue = serializer.serialize(%L)",
-                                defaultValueName
+                                defaultValueName,
                             )
                             .addStatement(
                                 "val stringifiedValue = $preferenceName.getString(%L, stringifiedDefaultValue).orEmpty()",
-                                keyName
+                                keyName,
                             )
                             .addStatement("serializer.deserialize(stringifiedValue)")
-                            .build()
+                            .build(),
                     )
                     .endControlFlow()
                     .addStatement(",")
@@ -207,32 +212,32 @@ internal class ObjectMemberGenerator(classDeclaration: KSClassDeclaration) : Bas
                                 "%L, %L, %L ->",
                                 preferenceName,
                                 keyName,
-                                valueName
+                                valueName,
                             )
                             .addStatement(
                                 if (property.isObject) "val serializer = %L" else "val serializer = %L()",
-                                property.serializer.qualifiedName?.asString().orEmpty()
+                                property.serializer.qualifiedName?.asString().orEmpty(),
                             )
                             .addStatement(
                                 "val stringifiedValue = serializer.serialize(%L)",
-                                valueName
+                                valueName,
                             )
                             .addStatement(
                                 "$preferenceName.edit().putString(%L, stringifiedValue).commit()",
-                                keyName
+                                keyName,
                             )
-                            .build()
+                            .build(),
                     )
                     .endControlFlow()
                     .addStatement(",")
                     .addStatement(
                         "%L = %L",
                         sharedPreferencesField.name,
-                        sharedPreferencesField.name
+                        sharedPreferencesField.name,
                     )
                     .addStatement(")")
                     .endControlFlow()
-                    .build()
+                    .build(),
             )
             .build()
     }

@@ -22,7 +22,7 @@ import com.tompee.arctictern.nest.ArcticTern
 
 internal class MigratableWriter(
     private val annotation: ArcticTern,
-    classDeclaration: KSClassDeclaration
+    classDeclaration: KSClassDeclaration,
 ) {
 
     companion object {
@@ -36,17 +36,19 @@ internal class MigratableWriter(
         val declaration: KSClassDeclaration,
         val name: String,
         val annotation: ArcticTern.Migration,
-        val isObject: Boolean
+        val isObject: Boolean,
     )
 
     private val migrations = classDeclaration.declarations
         .filter { it.getAnnotationsByType(ArcticTern.Migration::class).any() }
         .mapNotNull { clazz ->
             val annotation = clazz.getAnnotationsByType(ArcticTern.Migration::class).first()
-            if (annotation.version < 1) throw ProcessingException(
-                "Migration version should be greater than 0",
-                clazz
-            )
+            if (annotation.version < 1) {
+                throw ProcessingException(
+                    "Migration version should be greater than 0",
+                    clazz,
+                )
+            }
             val migrationClassName = ClassName("com.tompee.arctictern.nest", "Migration")
             val declaration = clazz as? KSClassDeclaration
                 ?: return@mapNotNull null
@@ -63,7 +65,7 @@ internal class MigratableWriter(
                 declaration,
                 declaration.simpleName.asString(),
                 annotation,
-                declaration.classKind == ClassKind.OBJECT
+                declaration.classKind == ClassKind.OBJECT,
             )
         }.toList()
 
@@ -80,16 +82,16 @@ internal class MigratableWriter(
         return addProperty(
             PropertySpec.builder(VERSION_CONST_NAME, INT, KModifier.PRIVATE, KModifier.CONST)
                 .initializer(annotation.version.toString())
-                .build()
+                .build(),
         ).addProperty(
             PropertySpec.builder(
                 VERSION_KEY_NAME,
                 STRING,
                 KModifier.PRIVATE,
-                KModifier.CONST
+                KModifier.CONST,
             )
                 .initializer(VERSION_KEY_VALUE)
-                .build()
+                .build(),
         )
     }
 
@@ -113,13 +115,15 @@ internal class MigratableWriter(
                 .addStatement(
                     "if (!%L.contains(%L)) return false",
                     sharedPreferencesField.name,
-                    VERSION_KEY_NAME
+                    VERSION_KEY_NAME,
                 )
                 .addStatement(
                     "return %L.getInt(%L, 0) == %L",
-                    sharedPreferencesField.name, VERSION_KEY_NAME, VERSION_CONST_NAME
+                    sharedPreferencesField.name,
+                    VERSION_KEY_NAME,
+                    VERSION_CONST_NAME,
                 )
-                .build()
+                .build(),
         )
     }
 
@@ -143,16 +147,16 @@ internal class MigratableWriter(
                 .beginControlFlow(
                     "if (!%L.contains(%L))",
                     sharedPreferencesField.name,
-                    VERSION_KEY_NAME
+                    VERSION_KEY_NAME,
                 )
                 .addStatement(
                     "%L.edit().putInt(%L, %L).commit()",
                     sharedPreferencesField.name,
                     VERSION_KEY_NAME,
-                    0
+                    0,
                 )
                 .endControlFlow()
-                .build()
+                .build(),
         )
     }
 
@@ -180,7 +184,8 @@ internal class MigratableWriter(
                 .writeSharedPreferencesInitialization()
                 .addStatement(
                     "val currentVersion = %L.getInt(%L, 0)",
-                    sharedPreferencesField.name, VERSION_KEY_NAME
+                    sharedPreferencesField.name,
+                    VERSION_KEY_NAME,
                 )
                 .beginControlFlow("for (i in currentVersion until %L)", VERSION_CONST_NAME)
                 .addStatement("val nextVersion = i + 1")
@@ -190,10 +195,10 @@ internal class MigratableWriter(
                 .addStatement(
                     "%L.edit().putInt(%L, nextVersion).commit()",
                     sharedPreferencesField.name,
-                    VERSION_KEY_NAME
+                    VERSION_KEY_NAME,
                 )
                 .endControlFlow()
-                .build()
+                .build(),
         )
     }
 
@@ -213,15 +218,15 @@ internal class MigratableWriter(
                                 addStatement(
                                     "insert(%L, %L)",
                                     it.annotation.version,
-                                    if (it.isObject) it.name else "${it.name}()"
+                                    if (it.isObject) it.name else "${it.name}()",
                                 )
                             }
                         }
                         .endControlFlow()
                         .endControlFlow()
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         ).addFunction(
             FunSpec.builder("insert")
                 .addModifiers(KModifier.PRIVATE)
@@ -232,7 +237,7 @@ internal class MigratableWriter(
                 .addStatement("LinkedHashSet()")
                 .endControlFlow()
                 .addStatement("set.add(migration)")
-                .build()
+                .build(),
         )
     }
 
@@ -241,7 +246,7 @@ internal class MigratableWriter(
             "val %L = %L.getSharedPreferences(%S, Context.MODE_PRIVATE)",
             sharedPreferencesField.name,
             contextField.name,
-            annotation.preferenceFile
+            annotation.preferenceFile,
         )
     }
 }
