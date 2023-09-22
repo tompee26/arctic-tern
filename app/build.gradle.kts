@@ -73,4 +73,5 @@ dependencies {
     androidTestImplementation(Libs.AndroidX.Test.runner)
     androidTestImplementation(Libs.AndroidX.Test.rules)
     androidTestImplementation(Libs.AndroidX.Test.ext)
+    androidTestImplementation(Libs.Kotlin.coroutinesTest)
 }
