@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
@@ -34,3 +36,10 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 apply("scripts/publish-root.gradle")
+
+project.getAllTasks(true)
+    .entries
+    .first { it.key.name == "nest" }
+    .value
+    .first { it.name == "generateMetadataFileForReleasePublication" }
+    .dependsOn(":nest:androidSourcesJar")
