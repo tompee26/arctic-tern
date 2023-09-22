@@ -1,6 +1,7 @@
 package com.tompee.arctictern.nest
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -72,20 +74,21 @@ class Preference<T>(
         .filter { it == key || it == null }
         .onStart { emit(key) }
         .map { value }
+        .onEach { Log.d("TOMPEEEE onEach", it.toString()) }
         .conflate()
 
     /**
-     * Returns a state flow with the [defaultValue] as the default value
+     * Returns a state flow with the [value] as the default value
      */
     fun asStateFlow(scope: CoroutineScope, started: SharingStarted): StateFlow<T> {
-        return observe().stateIn(scope, started, defaultValue)
+        return observe().stateIn(scope, started, value)
     }
 
     /**
      * Returns a shared flow with the [defaultValue] as the default value
      */
-    fun asSharedFlow(scope: CoroutineScope, started: SharingStarted): SharedFlow<T> {
-        return observe().shareIn(scope, started, 1)
+    fun asSharedFlow(scope: CoroutineScope, started: SharingStarted, replay: Int): SharedFlow<T> {
+        return observe().shareIn(scope, started, replay)
     }
 
     /**

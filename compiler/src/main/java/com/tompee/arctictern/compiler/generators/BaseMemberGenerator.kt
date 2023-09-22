@@ -3,6 +3,7 @@ package com.tompee.arctictern.compiler.generators
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -167,11 +168,16 @@ internal abstract class BaseMemberGenerator : MemberGenerator {
             )
             .addParameter(coroutineScopeField.toParameterSpec())
             .addParameter(sharingStartedField.toParameterSpec())
+            .addParameter(
+                ParameterSpec.builder("replay", INT)
+                    .build(),
+            )
             .addStatement(
-                "return %L.asSharedFlow(%L, %L)",
+                "return %L.asSharedFlow(%L, %L, %L)",
                 propertyName,
                 coroutineScopeField.name,
                 sharingStartedField.name,
+                "replay",
             )
             .build()
     }
