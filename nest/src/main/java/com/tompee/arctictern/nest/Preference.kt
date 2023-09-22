@@ -1,10 +1,10 @@
 package com.tompee.arctictern.nest
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -61,27 +60,30 @@ class Preference<T>(
     }
 
     /**
-     * Returns a flow that when subscribed to will emit the updated
-     * value of this preference
+     * Builds a flow that emits items on every value change
      */
-    fun observe(): Flow<T> = callbackFlow {
+    private fun updateFlow(): Flow<T> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            trySend(key)
+            trySendBlocking(key)
         }
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
         awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
         .filter { it == key || it == null }
-        .onStart { emit(key) }
         .map { value }
-        .onEach { Log.d("TOMPEEEE onEach", it.toString()) }
+
+    /**
+     * Returns a flow that when subscribed to will emit the update value of this preference
+     */
+    fun observe(): Flow<T> = updateFlow()
+        .onStart { emit(value) }
         .conflate()
 
     /**
      * Returns a state flow with the [value] as the default value
      */
     fun asStateFlow(scope: CoroutineScope, started: SharingStarted): StateFlow<T> {
-        return observe().stateIn(scope, started, value)
+        return updateFlow().stateIn(scope, started, value)
     }
 
     /**

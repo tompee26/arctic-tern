@@ -101,7 +101,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
      *             preference.getInt(key, defaultValue)
      *         },
      *         valueSetter = { preference, key, value ->
-     *             preference.edit().putInt(key, value).commit()
+     *             preference.edit().putInt(key, value).apply()
      *         },
      *         sharedPreferences = sharedPreferences
      *     )
@@ -155,7 +155,7 @@ internal class StandardMemberGenerator(classDeclaration: KSClassDeclaration) :
                                 valueName,
                             )
                             .addStatement(
-                                "$preferenceName.edit().${property.declaration.typeName.preferenceSetter}.commit()",
+                                "$preferenceName.edit().${property.declaration.typeName.preferenceSetter}.apply()",
                                 keyName,
                                 valueName,
                             )
